@@ -1,9 +1,10 @@
 # import imgui
 import math
-
+from .widget import get_wheeL_tri
 from mathutils import Vector
 import time
-
+color=[1,1,1,1]
+colors=[(0.0,1.0,1.0),(0.0,0.0,1.0),(0.0,0.0,0.0)]
 from .utils import get_imgui_widget_center
 
 color_picker_color = (114, 144, 154, 200)
@@ -28,7 +29,7 @@ from .extern.imgui_bundle import imgui
 from pathlib import Path
 from gpu_extras.presets import draw_texture_2d
 from .render import Renderer as BlenderImguiRenderer
-from .shader import draw_rec
+from .shader import draw_rec,draw_tri
 
 
 class GlobalImgui:
@@ -93,7 +94,7 @@ class GlobalImgui:
 
         # print('关闭imgui,移除句柄',self.draw_handlers.items())
 
-    def handler_add(self, callback, SpaceType, show_window_pos):
+    def handler_add(self, callback, SpaceType, show_window_pos,verts):
         """
         @param callback The draw function to add
         @param SpaceType Can be any class deriving from bpy.types.Space
@@ -105,8 +106,9 @@ class GlobalImgui:
             self.init_imgui()
         # print(self.draw_handlers)
         if SpaceType not in self.draw_handlers:
-            self.draw_handlers[SpaceType] = SpaceType.draw_handler_add(self.draw, (SpaceType, show_window_pos),
+            self.draw_handlers[SpaceType] = SpaceType.draw_handler_add(self.draw, (SpaceType, show_window_pos,verts),
                                                                        'WINDOW', 'POST_PIXEL')
+            print('SpaceType',SpaceType)
             # print('添加句柄,绘制回调,开始帧')
         # print(f'next_callback_id,{self.next_callback_id} ')
         handle = self.next_callback_id
@@ -140,7 +142,7 @@ class GlobalImgui:
         style.frame_rounding = 2
         style.frame_border_size = 1
 
-    def draw(self, area, show_window_pos):
+    def draw(self, area, show_window_pos,verts):
         a = time.time()
         context = bpy.context
         self.apply_ui_settings()  # 应用用户界面设置
@@ -169,9 +171,15 @@ class GlobalImgui:
 
         # 使用自定义渲染器渲染 ImGui 绘制数据
         self.imgui_backend.render(imgui.get_draw_data())
-        color = context.tool_settings.vertex_paint.brush.color
-        p = imgui.get_mouse_pos()
-
+        color = context.tool_settings.vertex_paint.brush.color.h
+        # mouse_pos = imgui.get_mouse_pos(show_window_pos)
+        # verts=get_wheeL_tri(show_window_pos)[1:]
+        print('verts',list(verts[1:]))
+        print('color',color)
+        global colors
+        # verts=[(-1.0, 1.0), (-1.0, -1.0), (1.0, 0.0)]
+        print('三角 中心',verts[0])
+        draw_tri(list(verts[1:]), context.tool_settings.vertex_paint.brush.color.h,colors)
         # draw_rec(show_window_pos, 116, float(color[0]))
         # print('global',time.time() - a)
 
@@ -212,8 +220,8 @@ def inbox(x, y, w, h, mpos):
     return False
 
 
-def imgui_handler_add(callback, SpaceType, show_window_pos):
-    return GlobalImgui.get().handler_add(callback, SpaceType, show_window_pos)
+# def imgui_handler_add(callback, SpaceType, show_window_pos):
+#     return GlobalImgui.get().handler_add(callback, SpaceType, show_window_pos)
 
 
 def imgui_handler_remove(handle):
@@ -261,7 +269,7 @@ class BaseDrawCall:
         pass
 
     def init_imgui(self, contxt):
-        self.imgui_handle = imgui_handler_add(self.draw, bpy.types.SpaceView3D, self.show_window_pos)
+        self.imgui_handle = GlobalImgui.get().handler_add(self.draw, bpy.types.SpaceView3D, self.show_window_pos,self.verts)
         # self.imgui_handle=GlobalImgui.get().handler_add(self.draw,bpy.types.SpaceView3D)
 
     def call_shutdown_imgui(self):
@@ -322,7 +330,10 @@ def convert_color(h, s, v, alpha=255):
 class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
     bl_idname = "imgui.gui_test"
     bl_label = "Gui Test"
-
+    bl_options = {'REGISTER', 'UNDO'}
+    # @classmethod
+    # def poll(cls, context):
+    #     return context.mode in {'SCULPT', 'PAINT_VERTEX', 'PAINT_TEXTURE'}
     def draw(self, context: bpy.types.Context):
         a = time.time()
         self.cover = False
@@ -335,7 +346,7 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
         # imgui.set_next_window_size(imgui.ImVec2(570,240))
         # if not self.show_window_imgui:
         imgui.set_next_window_pos(
-            imgui.ImVec2(self.show_window_pos[0] - 117, context.region.height - self.show_window_pos[1] - 117))
+            imgui.ImVec2(self.show_window_pos[0] - 128, context.region.height - self.show_window_pos[1] - 128))
         #     self.show_window_imgui = True
         # print('imgui mouse', imgui.get_mouse_pos(), imgui.get_window_size())
         imgui.begin("Your first window!", True, window_flags)
@@ -343,7 +354,8 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
         # imgui.text("Another line!")
         imgui.text("")
         # imgui.ColorEditFlags_.picker_hue_wheel
-        misc_flags = imgui.ColorEditFlags_.picker_hue_wheel | imgui.ColorEditFlags_.no_options | imgui.ColorEditFlags_.no_inputs | imgui.ColorEditFlags_.no_alpha | imgui.ColorEditFlags_.no_side_preview | imgui.ColorEditFlags_.no_label
+        im_cf=imgui.ColorEditFlags_
+        misc_flags = im_cf.picker_hue_wheel | im_cf.no_options|im_cf.input_rgb | im_cf.no_alpha | im_cf.no_side_preview | im_cf.no_label
         # imgui.get_window_draw_list().
         # imgui.text("Color button only:")
         # p3 = imgui.get_cursor_screen_pos()
@@ -351,7 +363,10 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
         # imgui.set_next_item_width(254)
         # changed1, self.color4 = imgui.color_picker4("MyColor", imgui.ImVec4(self.color4), misc_flags)  # type: ignore
         from .widget import colorpicker
-        changed1=colorpicker('aa',self.color4,misc_flags)
+        global color
+        # print('aa', color)
+        changed1=colorpicker('aa',bpy.context.tool_settings.vertex_paint.brush.color,misc_flags)
+        # print('bb',color)
         # print(333, self.color4[0], self.color4[1], self.color4[2])
         # print('hei', imgui.get_frame_height())
         # imgui.same_line()
@@ -411,10 +426,11 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
             if imgui.is_item_active() or imgui.is_item_hovered():
                 imgui.set_tooltip(f'{self.c:.3f}')
             imgui.pop_style_color(4)
+
         imgui.end_group()
 
         imgui.pop_id()
-
+        imgui.text("")
         # imgui.show_demo_window()
 
         self.track_any_cover()
@@ -435,11 +451,16 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
         self.show_window_pos = (event.mouse_region_x, event.mouse_region_y)
         self.show_window_imgui = False
         self.message = "Type something here!"
+        # self.verts=[(1,1),(1,1),(1,1)]
+        self.verts = get_wheeL_tri(self.show_window_pos)
         self.init_imgui(context)
 
         # if not self.try_reg(self.area, context, origin):
+        from .shader import draw_callback
+        # self.hand=bpy.types.SpaceView3D.draw_handler_add(draw_callback, (), 'WINDOW', 'POST_PIXEL')
         #     return {"FINISHED"}
         context.window_manager.modal_handler_add(self)
+
         # print('预处理数据')
         # print(time.time() - a)
         return {'RUNNING_MODAL'}

@@ -1,9 +1,16 @@
 import math
+
+import bpy
 import numpy as np
 from .extern.imgui_bundle import imgui
 
+color_edit_active_component = None
+
+
 def im_clamp(v, mn, mx):
     return max(mn, min(mx, v))
+
+
 def color_edit_restore_hs(color, H, S, V):
     g_Gimgui = imgui.get_current_context()
     assert g_Gimgui.color_edit_current_id != 0, 'ColorEditCurrentID should not be zero'
@@ -16,7 +23,33 @@ def color_edit_restore_hs(color, H, S, V):
     if V == 0.0:
         S = g_Gimgui.color_edit_saved_sat
     return H, S, V
+def get_wheeL_tri(mouse_pos):
 
+    sv_picker_size = 256
+    print('三角sv_picker_size',sv_picker_size)
+    # square_sz = imgui.get_frame_height()
+    square_sz = 19
+    print('三角square_sz',square_sz)
+    bars_width = square_sz
+    region=bpy.context.region
+    print('region',region.height)
+    picker_pos=imgui.ImVec2(mouse_pos[0],mouse_pos[1])
+    print('三角picker_pos', picker_pos)
+    # picker_pos=imgui.get_mouse_pos()
+    wheel_thickness = sv_picker_size * 0.08
+    wheel_r_outer = sv_picker_size * 0.50
+    wheel_r_inner = wheel_r_outer - wheel_thickness
+    wheel_center = imgui.ImVec2(picker_pos.x + (sv_picker_size + bars_width) * 0.5,
+                                picker_pos.y + sv_picker_size * 0.5)
+    triangle_r = wheel_r_inner - int(sv_picker_size * 0.027)
+    triangle_pa = imgui.ImVec2(triangle_r, 0.0)  # Hue point.
+    triangle_pc = imgui.ImVec2(triangle_r * -0.5,
+                               triangle_r * -0.866025)  # White point.-0.5 和 -0.866025 分别是 cos(120°) 和 sin(120°) 的值。
+    triangle_pb = imgui.ImVec2(triangle_r * -0.5, triangle_r * +0.866025)
+    tra = (mouse_pos[0]+19/2 + triangle_pa.x, mouse_pos[1] + triangle_pa.y-19)
+    trb = (mouse_pos[0]+19/2 + triangle_pb.x, mouse_pos[1] + triangle_pb.y-19)
+    trc = (mouse_pos[0]+19/2 + triangle_pc.x, mouse_pos[1] + triangle_pc.y-19)
+    return (wheel_center.x,wheel_center.y),tra, trb, trc
 def colorpicker(label, color, flags, ref_col=None):
     # 拾取器 上下文
     g_Gimgui = imgui.get_current_context()
@@ -66,7 +99,9 @@ def colorpicker(label, color, flags, ref_col=None):
     components = 3 if flags & imgui.ColorEditFlags_.no_alpha else 4
     alpha_bar = (flags & imgui.ColorEditFlags_.alpha_bar) and (not (flags & imgui.ColorEditFlags_.no_alpha))
     picker_pos = window.dc.cursor_pos
+
     square_sz = imgui.get_frame_height()
+
     bars_width = square_sz
 
     # sv_picker_size = max(bars_width * 1, width - (
@@ -84,13 +119,18 @@ def colorpicker(label, color, flags, ref_col=None):
     wheel_r_inner = wheel_r_outer - wheel_thickness
     wheel_center = imgui.ImVec2(picker_pos.x + (sv_picker_size + bars_width) * 0.5,
                                 picker_pos.y + sv_picker_size * 0.5)
+    print('imgui sv_picker_size', sv_picker_size)
+    print('imguisquare_sz', square_sz)
+    print('imgui 中心',wheel_center)
+    print('imgui picker_pos', picker_pos)
     # 该三角形被显示为旋转状态, 其中triangle_pa指向色调(Hue)
     # 方向, 但大部分坐标仍保持未旋转, 用于逻辑计算。
     triangle_r = wheel_r_inner - int(sv_picker_size * 0.027)
     triangle_pa = imgui.ImVec2(triangle_r, 0.0)  # Hue point.
-    triangle_pc = imgui.ImVec2(triangle_r * -0.5, triangle_r * -0.866025)  #  White point.
-    triangle_pb = imgui.ImVec2(triangle_r * -0.5, triangle_r * +0.866025)  #Black  point.
-
+    triangle_pc = imgui.ImVec2(triangle_r * -0.5, triangle_r * -0.866025)  # White point.-0.5 和 -0.866025 分别是 cos(120°) 和 sin(120°) 的值。
+    triangle_pb = imgui.ImVec2(triangle_r * -0.5, triangle_r * +0.866025)  # Black  point.-0.5 和 0.866025 分别是 cos(240°) 和 sin(240°) 的值
+    print(triangle_pc.y,triangle_pb.y)
+    print(triangle_pc.y-triangle_pb.y)
     H = color[0]
     S = color[1]
     V = color[2]
@@ -99,10 +139,10 @@ def colorpicker(label, color, flags, ref_col=None):
     B = color[2]
 
     if flags & imgui.ColorEditFlags_.input_rgb:
-        H, S, V=imgui.color_convert_rgb_to_hsv(R, G, B, H, S, V)
-        H,S,V=color_edit_restore_hs(color, H, S, V)
+        H, S, V = imgui.color_convert_rgb_to_hsv(R, G, B, H, S, V)
+        H, S, V = color_edit_restore_hs(color, H, S, V)
     elif flags & imgui.ColorEditFlags_.input_hsv:
-        R, G, B=imgui.color_convert_hsv_to_rgb(H, S, V, R, G, B)
+        R, G, B = imgui.color_convert_hsv_to_rgb(H, S, V, R, G, B)
     # 初始化变量，用于跟踪颜色值的变化
     value_changed = False
     value_changed_h = False
@@ -113,31 +153,45 @@ def colorpicker(label, color, flags, ref_col=None):
     if flags & imgui.ColorEditFlags_.picker_hue_wheel:
         imgui.invisible_button('hsv', imgui.ImVec2(sv_picker_size + style.item_inner_spacing.x + bars_width,
                                                    sv_picker_size))
-        print('activce',imgui.is_item_active(),'read ',is_readonly)
-        if imgui.is_item_active() and (not is_readonly):
-            print('',imgui.is_item_active() and (not is_readonly))
-            initial_off = g_Gimgui.io.mouse_pos_prev - wheel_center
+        print('activce', imgui.is_item_active(), 'read ', is_readonly)
+        # 全局变量用于跟踪当前激活的控件
 
-            current_off = g_Gimgui.io.mouse_pos - wheel_center
+        global color_edit_active_component
+        # 检查是否需要更新当前激活的控件
+        if imgui.is_item_active() and color_edit_active_component is None:
+            initial_off = g_Gimgui.io.mouse_pos_prev - wheel_center
             initial_dist2 = imgui.internal.im_length_sqr(initial_off)
-            if ((initial_dist2 >= ((wheel_r_inner - 1) * (wheel_r_inner - 1))) and (initial_dist2 <= ((wheel_r_outer + 1) * (
-                    wheel_r_outer + 1)))):
-                H = math.atan2(current_off.y, current_off.x) / math.pi * 0.5
-                if H < .0:
-                    H += 1.0
-                value_changed = value_changed_h = True
-            cos_hue_angle = math.cos(-H * 2.0 * math.pi)
-            sin_hue_angle = math.sin(-H * 2.0 * math.pi)
-            #三角形
             if imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc, initial_off):
-                current_off_unrotated=current_off
-                if not imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc, current_off_unrotated):
-                    current_off_unrotated=imgui.internal.im_triangle_closest_point(triangle_pa, triangle_pb, triangle_pc, current_off_unrotated)
-                uu,vv,ww=.0,.0,.0
-                uu, vv, ww=imgui.internal.im_triangle_barycentric_coords(triangle_pa, triangle_pb, triangle_pc, current_off_unrotated, uu, vv, ww)
-                V=im_clamp(1.0-vv,0.0001,1.0)
-                S=im_clamp(uu/V,0.0001,1.0)
-                value_changed = value_changed_sv = True
+                color_edit_active_component = 'triangle'
+            elif initial_dist2 >= ((wheel_r_inner - 1) * (wheel_r_inner - 1)) and initial_dist2 <= (
+                    (wheel_r_outer + 1) * (wheel_r_outer + 1)):
+                color_edit_active_component = 'wheel'
+
+        # 检查当前激活的控件并更新颜色值
+        if color_edit_active_component == 'triangle':
+            current_off_unrotated = g_Gimgui.io.mouse_pos - wheel_center
+            if not imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc,
+                                                             current_off_unrotated):
+                current_off_unrotated = imgui.internal.im_triangle_closest_point(triangle_pa, triangle_pb, triangle_pc,
+                                                                                 current_off_unrotated)
+
+            uu, vv, ww = 0.0, 0.0, 0.0
+            uu, vv, ww = imgui.internal.im_triangle_barycentric_coords(triangle_pa, triangle_pb, triangle_pc,
+                                                                       current_off_unrotated, uu, vv, ww)
+            V = im_clamp(1.0 - vv, 0.0001, 1.0)
+            S = im_clamp(uu / V, 0.0001, 1.0)
+            value_changed = value_changed_sv = True
+
+        elif color_edit_active_component == 'wheel':
+            current_off = g_Gimgui.io.mouse_pos - wheel_center
+            H = math.atan2(current_off.y, current_off.x) / math.pi * 0.5
+            if H < .0:
+                H += 1.0
+            value_changed = value_changed_h = True
+
+        # 重置激活的控件状态
+        if not imgui.is_item_active():
+            color_edit_active_component = None
             # if imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc, imgui.internal.im_rotate(initial_off,cos_hue_angle,sin_hue_angle)):
             #     current_off_unrotated=imgui.internal.im_rotate(current_off, cos_hue_angle, sin_hue_angle)
             #     if not imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc, current_off_unrotated):
@@ -169,7 +223,7 @@ def colorpicker(label, color, flags, ref_col=None):
         if flags & imgui.ColorEditFlags_.no_alpha:
             col_v4 = imgui.ImVec4(color[0], color[1], color[2], 1.0)
         else:
-            col_v4 = imgui.ImVec4(color[0], color[1], color[2], color[3])
+            col_v4 = imgui.ImVec4(color[0], color[1], color[2], 1)
         if flags & imgui.ColorEditFlags_.no_label:
             pass
         flag = imgui.ColorEditFlags_
@@ -195,29 +249,42 @@ def colorpicker(label, color, flags, ref_col=None):
             color[1] = S
             color[2] = V
     value_changed_fix_hue_wrap = False
-    # if (flags & imgui.ColorEditFlags_.no_inputs)==0:
+    # if (flags & imgui.ColorEditFlags_.no_inputs) == 0:
+    #     imgui.push_item_width((bar1_pos_x if alpha_bar else bar0_pos_x) + bars_width - picker_pos.x)
+    #     im_cf = imgui.ColorEditFlags_
+    #     sub_flags_to_forward = im_cf.data_type_mask_ | im_cf.input_mask_ | im_cf.hdr | im_cf.no_alpha | im_cf.no_options | im_cf.no_tooltip | im_cf.no_small_preview | im_cf.alpha_preview | im_cf.alpha_preview_half
+    #     sub_flags = (flags & sub_flags_to_forward) | im_cf.no_picker
+    #     if (flags & im_cf.display_rgb) or (flags & im_cf.display_mask_) == 0:
+    #         if imgui.color_edit3('##rgb',color,sub_flags|im_cf.display_rgb)[0]:
+    #             value_changed_fix_hue_wrap = (g_Gimgui.active_id != 0 and not g_Gimgui.active_id_allow_overlap)
+    #             value_changed =True
+    #     if (flags & im_cf.display_hsv) or (flags & im_cf.display_mask_) == 0:
+    #         value_changed |= imgui.color_edit3("##hsv", color, sub_flags | im_cf.display_hsv)[0]
+    #     imgui.pop_item_width()
     if value_changed_fix_hue_wrap and (flags & imgui.ColorEditFlags_.input_rgb):
         new_H, new_S, new_V = .0, .0, .0
-        new_H, new_S, new_V=imgui.color_convert_rgb_to_hsv(color[0], color[1], color[2], new_H, new_S, new_V)
-        if new_H<=.0 and H>.0:
+        new_H, new_S, new_V = imgui.color_convert_rgb_to_hsv(color[0], color[1], color[2], new_H, new_S, new_V)
+        if new_H <= .0 and H > .0:
 
-            if new_V<=0 and V!=new_V:
-                color[0],color[1],color[2]=imgui.color_convert_hsv_to_rgb(H,S,V*0.5 if new_V<=0 else new_V,color[0],color[1],color[2])
-            elif new_S<=0:
-                color[0],color[1],color[2]=imgui.color_convert_hsv_to_rgb(H,S*0.5 if new_S<=0 else new_S,color[0],color[1],color[2])
+            if new_V <= 0 and V != new_V:
+                color[0], color[1], color[2] = imgui.color_convert_hsv_to_rgb(H, S, V * 0.5 if new_V <= 0 else new_V,
+                                                                              color[0], color[1], color[2])
+            elif new_S <= 0:
+                color[0], color[1], color[2] = imgui.color_convert_hsv_to_rgb(H, S * 0.5 if new_S <= 0 else new_S,
+                                                                              color[0], color[1], color[2])
 
     if value_changed:
         if flags & imgui.ColorEditFlags_.input_rgb:
             R = color[0]
             G = color[1]
             B = color[2]
-            imgui.color_convert_rgb_to_hsv(R, G, B, H, S, V)
-            H,S,V=color_edit_restore_hs(color, H, S, V)
+            H, S, V=imgui.color_convert_rgb_to_hsv(R, G, B, H, S, V)
+            H, S, V = color_edit_restore_hs(color, H, S, V)
         elif flags & imgui.ColorEditFlags_.input_hsv:
             H = color[0]
             S = color[1]
             V = color[2]
-            imgui.color_convert_hsv_to_rgb(H, S, V, R, G, B)
+            R, G, B=imgui.color_convert_hsv_to_rgb(H, S, V, R, G, B)
 
     col_black = imgui.get_color_u32(imgui.ImVec4(0, 0, 0, 255))
     col_white = imgui.get_color_u32(imgui.ImVec4(255, 255, 255, 255))
@@ -232,13 +299,14 @@ def colorpicker(label, color, flags, ref_col=None):
         imgui.get_color_u32(imgui.ImVec4(255, 0, 0, 255))  # 红色(再次出现以闭合色环)
     ]
 
-    hue_color_f = imgui.ImVec4(1, 1, 1, style.alpha)
+    hue_color_f = imgui.ImVec4(1, 1, 1, 1)
     # print('hue_color_f',hue_color_f)
-    hue_color_f = imgui.ImVec4(*(imgui.color_convert_hsv_to_rgb(H, 1, 1, hue_color_f.x, hue_color_f.y, hue_color_f.z)),1)
+    hue_color_f = imgui.ImVec4(*(imgui.color_convert_hsv_to_rgb(H, 1, 1, hue_color_f.x, hue_color_f.y, hue_color_f.z)),
+                               1)
     # print('hue_color_f2', hue_color_f)
     hue_color32 = imgui.color_convert_float4_to_u32(hue_color_f)
     user_col32_striped_of_alpha = imgui.color_convert_float4_to_u32(
-        imgui.ImVec4(R, G, B, style.alpha))  # Important: this is still including the main rendering / style alpha!!
+        imgui.ImVec4(R, G, B, 1))  # Important: this is still including the main rendering / style alpha!!
 
     # 圆环上的 按钮
     if flags & imgui.ColorEditFlags_.picker_hue_wheel:
@@ -275,31 +343,32 @@ def colorpicker(label, color, flags, ref_col=None):
         imgui.get_window_draw_list().add_circle(hue_cursor_pos, hue_cursor_rad, col_white, hue_cursor_segments)
         # imgui.pop_id()
 
-        tra = wheel_center + imgui.internal.im_rotate(triangle_pa, cos_hue_angle, sin_hue_angle)
-        trb = wheel_center + imgui.internal.im_rotate(triangle_pb, cos_hue_angle, sin_hue_angle)
-        trc = wheel_center + imgui.internal.im_rotate(triangle_pc, cos_hue_angle, sin_hue_angle)
+        # tra = wheel_center + imgui.internal.im_rotate(triangle_pa, cos_hue_angle, sin_hue_angle)
+        # trb = wheel_center + imgui.internal.im_rotate(triangle_pb, cos_hue_angle, sin_hue_angle)
+        # trc = wheel_center + imgui.internal.im_rotate(triangle_pc, cos_hue_angle, sin_hue_angle)
 
         tra = wheel_center + triangle_pa
         trb = wheel_center + triangle_pb
         trc = wheel_center + triangle_pc
         uv_white = imgui.get_font_tex_uv_white_pixel()
 
-        imgui.get_window_draw_list().prim_reserve(3,3)
+        imgui.get_window_draw_list().prim_reserve(3, 3)
         imgui.get_window_draw_list().prim_vtx(tra, uv_white, hue_color32)
         imgui.get_window_draw_list().prim_vtx(trb, uv_white, col_black)
         imgui.get_window_draw_list().prim_vtx(trc, uv_white, col_white)
         imgui.get_window_draw_list().add_triangle(tra, trb, trc, col_midgrey, 0)
         sv_cursor_pos = imgui.internal.im_lerp(imgui.internal.im_lerp(trc, tra, imgui.internal.im_saturate(S)), trb,
                                                imgui.internal.im_saturate(1 - V))
-    sv_cursor_rad=wheel_thickness*0.55 if value_changed_sv else wheel_thickness*0.4
-    sv_cursor_segments=imgui.get_window_draw_list()._calc_circle_auto_segment_count(sv_cursor_rad)
-    imgui.get_window_draw_list().add_circle_filled(sv_cursor_pos, sv_cursor_rad, user_col32_striped_of_alpha, sv_cursor_segments)
+    sv_cursor_rad = wheel_thickness * 0.55 if value_changed_sv else wheel_thickness * 0.4
+    sv_cursor_segments = imgui.get_window_draw_list()._calc_circle_auto_segment_count(sv_cursor_rad)
+    imgui.get_window_draw_list().add_circle_filled(sv_cursor_pos, sv_cursor_rad, user_col32_striped_of_alpha,
+                                                   sv_cursor_segments)
     imgui.get_window_draw_list().add_circle(sv_cursor_pos, sv_cursor_rad + 1, col_midgrey, sv_cursor_segments)
     imgui.get_window_draw_list().add_circle(sv_cursor_pos, sv_cursor_rad, col_white, sv_cursor_segments)
     imgui.end_group()
     # if value_changed and
     if set_current_color_edit_id:
-        g_Gimgui.color_edit_current_id=0
+        g_Gimgui.color_edit_current_id = 0
     imgui.pop_id()
 
     # print('backup_initial_col', R,G,B)
@@ -316,11 +385,15 @@ def colorpicker(label, color, flags, ref_col=None):
     # print('backup_initial_col', H, S, V)
     # print('backup_initial_col', color[0], color[1], color[2])
     # return value_changed,
+
+
 def convert_color_float(h, s, v, alpha=1):
     """ Convert HSV to RGBA format and get ImU32 color value. """
     r, g, b = 0.0, .0, .0
     r, g, b = imgui.color_convert_hsv_to_rgb(h, s, v, r, g, b)  # Convert HSV to RGB
-    return imgui.ImVec4(r, g, b , alpha)
+    return imgui.ImVec4(r, g, b, alpha)
+
+
 def convert_color(h, s, v, alpha=255):
     """ Convert HSV to RGBA format and get ImU32 color value. """
     r, g, b = 0.0, .0, .0
