@@ -4,7 +4,17 @@ from .widget import get_wheeL_tri
 from mathutils import Vector
 import time
 color=[1,1,1,1]
-colors=[(0.0,1.0,1.0),(0.0,0.0,1.0),(0.0,0.0,0.0)]
+# 逆时针
+colors=[#a              b                   c
+    # [(0.0,0.5,2.0/3.0),(0.0,0.0,1.0),(0.0,0.0,0.5)],
+    # [(0.0,0.5,2.0/3.0),(0.0,0.0,1.0),(0.0,0.5,1.0)],
+    # [(0.0,0.5,2.0/3.0),(0.0,1.0,1.0),(0.0,0.5,1.0)],
+    # [(0.0,0.5,2.0/3.0),(0.0,1.0,1.0),(0.0,1.0,0.5)],
+    # [(0.0,0.5,2.0/3.0),(0.0,1.0,0.0),(0.0,1.0,0.5)],
+    # [(0.0,0.5,2.0/3.0),(0.0,1.0,0.0),(0.0,0.0,0.5)],
+    # [(0.0,0.5,2.0/3.0),(0.0,0.0,1.0),(0.0,1.0,0.0)],
+    [(0.0,0.5,1.0),(0.0,1.0,0.0),(0.0,0.0,0.0)],
+        ]
 from .utils import get_imgui_widget_center
 
 color_picker_color = (114, 144, 154, 200)
@@ -30,7 +40,7 @@ from pathlib import Path
 from gpu_extras.presets import draw_texture_2d
 from .render import Renderer as BlenderImguiRenderer
 from .shader import draw_rec,draw_tri
-
+import gpu
 
 class GlobalImgui:
     _instance = None
@@ -174,14 +184,18 @@ class GlobalImgui:
         color = context.tool_settings.vertex_paint.brush.color.h
         # mouse_pos = imgui.get_mouse_pos(show_window_pos)
         # verts=get_wheeL_tri(show_window_pos)[1:]
-        print('verts',list(verts[1:]))
-        print('color',color)
+        # print('verts',list(verts[1:]))
+        # print('color',color)
         global colors
         # verts=[(-1.0, 1.0), (-1.0, -1.0), (1.0, 0.0)]
-        print('三角 中心',verts[0])
-        draw_tri(list(verts[1:]), context.tool_settings.vertex_paint.brush.color.h,colors)
-        # draw_rec(show_window_pos, 116, float(color[0]))
+        # print('三角 中心',verts[0])
+        # gpu.state.blend_set('ALPHA')
+        # gpu.state.depth_test_set('LESS_EQUAL')
+        # for i in range(1):
+        #     draw_tri(verts[i], context.tool_settings.vertex_paint.brush.color.h,colors[i])
+        # draw_rec(show_window_pos, 16, context.tool_settings.vertex_paint.brush.color.h)
         # print('global',time.time() - a)
+        # gpu.state.depth_test_set('NONE')
 
     def setup_key_map(self):
         io = imgui.get_io()
@@ -370,8 +384,8 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
         # print(333, self.color4[0], self.color4[1], self.color4[2])
         # print('hei', imgui.get_frame_height())
         # imgui.same_line()
-        # changed2, self.color4=imgui.color_edit4("##RefColor",self.color4, misc_flags)
-        # changed1, self.color4=imgui.color_picker4("MyColor", imgui.ImVec4(self.color4), misc_flags )  # type: ignore
+        # changed2, bpy.context.tool_settings.vertex_paint.brush.color=imgui.color_edit3("##RefColor",bpy.context.tool_settings.vertex_paint.brush.color, misc_flags)
+        # changed1, bpy.context.tool_settings.vertex_paint.brush.color=imgui.color_picker3("MyColor", bpy.context.tool_settings.vertex_paint.brush.color, misc_flags )  # type: ignore
         # square_sz = imgui.get_frame_height()
         # bars_width = square_sz
         # width = imgui.calc_item_width()
@@ -431,7 +445,7 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
 
         imgui.pop_id()
         imgui.text("")
-        # imgui.show_demo_window()
+        imgui.show_demo_window()
 
         self.track_any_cover()
         if imgui.is_item_hovered():
@@ -456,7 +470,7 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
         self.init_imgui(context)
 
         # if not self.try_reg(self.area, context, origin):
-        from .shader import draw_callback
+        # from .shader import draw_callback
         # self.hand=bpy.types.SpaceView3D.draw_handler_add(draw_callback, (), 'WINDOW', 'POST_PIXEL')
         #     return {"FINISHED"}
         context.window_manager.modal_handler_add(self)

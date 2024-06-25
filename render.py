@@ -21,7 +21,10 @@ class Renderer(BaseOpenGLRenderer):
                 
                 void main() {
                     Frag_UV = UV;
-                    final_col = Color;
+                    final_col=Color;
+                    final_col.rgb = pow(final_col.rgb,vec3(2.2));
+                    final_col.rgb*=vec3(final_col.a);
+                    final_col.a=1.0-pow(1.0-final_col.a,2.2);
                     gl_Position = ProjMtx * vec4(Position.xy, 0, 1);
                 }
                 """
@@ -47,10 +50,11 @@ class Renderer(BaseOpenGLRenderer):
                     }
 
                     void main() {
-
-                        vec4 linearColor  = (texture(Texture, Frag_UV.st)) *final_col;
-                        Frag_Color = linearColor; // 输出sRGB颜色
-                        Frag_Color = srgb_to_linear(linearColor); // 输出sRGB颜色
+                        
+                        Frag_Color = final_col; // 输出sRGB颜色
+                        Frag_Color  = (texture(Texture, Frag_UV.st)) *Frag_Color;
+                        Frag_Color.rgb = pow(Frag_Color.rgb,vec3(2.2)); // 输出sRGB颜色
+                        Frag_Color.a = pow(Frag_Color.a,2.2); // 输出sRGB颜色
                     }
                                                 """
     instance = None
@@ -207,13 +211,12 @@ class Renderer(BaseOpenGLRenderer):
         # if last_enable_blend:
         #     gpu.state.blend_set(last_enable_blend)
         # else:
-        #     gpu.state.blend_set('NONE')
+        gpu.state.blend_set('NONE')
         # if last_enable_depth_test:
         #     gpu.state.depth_test_set(last_enable_depth_test)
         # else:
         #     gpu.state.depth_test_set('NONE')
         gpu.state.scissor_test_set(False)  # 启用剪裁测试
-    #
     #     # Restore previous GPU state
     #     # gpu.state.active_set(state)
 

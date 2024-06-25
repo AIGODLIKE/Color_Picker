@@ -33,23 +33,45 @@ def get_wheeL_tri(mouse_pos):
     bars_width = square_sz
     region=bpy.context.region
     print('region',region.height)
-    picker_pos=imgui.ImVec2(mouse_pos[0],mouse_pos[1])
+    picker_pos=imgui.ImVec2(mouse_pos[0]-127,mouse_pos[1]+110)
     print('三角picker_pos', picker_pos)
     # picker_pos=imgui.get_mouse_pos()
     wheel_thickness = sv_picker_size * 0.08
     wheel_r_outer = sv_picker_size * 0.50
     wheel_r_inner = wheel_r_outer - wheel_thickness
     wheel_center = imgui.ImVec2(picker_pos.x + (sv_picker_size + bars_width) * 0.5,
-                                picker_pos.y + sv_picker_size * 0.5)
+                                picker_pos.y - sv_picker_size * 0.5)
+    print('三角 sv_picker_size * 0.5', sv_picker_size * 0.5)
+    print('三角wheel_center', wheel_center)
+    print('三角bars_width', bars_width)
+    print('三角sv_picker_size', sv_picker_size)
+
     triangle_r = wheel_r_inner - int(sv_picker_size * 0.027)
     triangle_pa = imgui.ImVec2(triangle_r, 0.0)  # Hue point.
     triangle_pc = imgui.ImVec2(triangle_r * -0.5,
                                triangle_r * -0.866025)  # White point.-0.5 和 -0.866025 分别是 cos(120°) 和 sin(120°) 的值。
     triangle_pb = imgui.ImVec2(triangle_r * -0.5, triangle_r * +0.866025)
-    tra = (mouse_pos[0]+19/2 + triangle_pa.x, mouse_pos[1] + triangle_pa.y-19)
-    trb = (mouse_pos[0]+19/2 + triangle_pb.x, mouse_pos[1] + triangle_pb.y-19)
-    trc = (mouse_pos[0]+19/2 + triangle_pc.x, mouse_pos[1] + triangle_pc.y-19)
-    return (wheel_center.x,wheel_center.y),tra, trb, trc
+    tra = (wheel_center[0] + triangle_pa.x, wheel_center[1] + triangle_pa.y)
+    trb = (wheel_center[0]+ triangle_pb.x, wheel_center[1] + triangle_pb.y)
+    trc = (wheel_center[0]+ triangle_pc.x, wheel_center[1] + triangle_pc.y)
+    a0 = (wheel_center[0] + 0, wheel_center[1] + triangle_pa.y)
+    b0 = (wheel_center[0] + triangle_pb.x, wheel_center[1] + triangle_pb.y )
+    b2 = (wheel_center[0] + triangle_pa.x, wheel_center[1] + triangle_pa.y)
+    b4 = (wheel_center[0]+ triangle_pb.x, wheel_center[1] + triangle_pc.y)
+    c0 = (wheel_center[0] + triangle_pc.x, wheel_center[1] + triangle_pa.y )
+    c1 = (wheel_center[0] + triangle_r*0.25, wheel_center[1] + triangle_pb.y/2)
+    c3 = (wheel_center[0] + triangle_r*0.25, wheel_center[1] - triangle_pb.y/2)
+    list = [
+        # [a0, b0, c0],
+        # [a0, b0, c1],
+        # [a0, b2, c1],
+        # [a0, b2, c3],
+        # [a0, b4, c3],
+        # [a0, b4, c0],
+        [tra, trb, trc],
+    ]
+    # return (wheel_center.x,wheel_center.y),tra, trb, trc
+    return list
 def colorpicker(label, color, flags, ref_col=None):
     # 拾取器 上下文
     g_Gimgui = imgui.get_current_context()
@@ -119,10 +141,13 @@ def colorpicker(label, color, flags, ref_col=None):
     wheel_r_inner = wheel_r_outer - wheel_thickness
     wheel_center = imgui.ImVec2(picker_pos.x + (sv_picker_size + bars_width) * 0.5,
                                 picker_pos.y + sv_picker_size * 0.5)
+    print('imgui sv_picker_size * 0.5',sv_picker_size * 0.5)
     print('imgui sv_picker_size', sv_picker_size)
     print('imguisquare_sz', square_sz)
-    print('imgui 中心',wheel_center)
+    print('imgui wheel_center',wheel_center)
     print('imgui picker_pos', picker_pos)
+    print('imgui bars_width', bars_width)
+    print('imgui sv_picker_size', sv_picker_size)
     # 该三角形被显示为旋转状态, 其中triangle_pa指向色调(Hue)
     # 方向, 但大部分坐标仍保持未旋转, 用于逻辑计算。
     triangle_r = wheel_r_inner - int(sv_picker_size * 0.027)
@@ -287,8 +312,11 @@ def colorpicker(label, color, flags, ref_col=None):
             R, G, B=imgui.color_convert_hsv_to_rgb(H, S, V, R, G, B)
 
     col_black = imgui.get_color_u32(imgui.ImVec4(0, 0, 0, 255))
+    col_black = imgui.color_convert_float4_to_u32(imgui.ImVec4(-1.0,-1.0,-1.0, 1.0))
     col_white = imgui.get_color_u32(imgui.ImVec4(255, 255, 255, 255))
+    col_white = imgui.color_convert_float4_to_u32(imgui.ImVec4(1.0, 1.0, 1.0, 1.0))
     col_midgrey = imgui.get_color_u32(imgui.ImVec4(128, 128, 128, 255))
+    col_midgrey = imgui.color_convert_float4_to_u32(imgui.ImVec4(0.5, 0.5, 0.5, 1.0))
     col_hues = [
         imgui.get_color_u32(imgui.ImVec4(255, 0, 0, 255)),  # 红色
         imgui.get_color_u32(imgui.ImVec4(255, 255, 0, 255)),  # 黄色
@@ -303,10 +331,11 @@ def colorpicker(label, color, flags, ref_col=None):
     # print('hue_color_f',hue_color_f)
     hue_color_f = imgui.ImVec4(*(imgui.color_convert_hsv_to_rgb(H, 1, 1, hue_color_f.x, hue_color_f.y, hue_color_f.z)),
                                1)
+
     # print('hue_color_f2', hue_color_f)
     hue_color32 = imgui.color_convert_float4_to_u32(hue_color_f)
     user_col32_striped_of_alpha = imgui.color_convert_float4_to_u32(
-        imgui.ImVec4(R, G, B, 1))  # Important: this is still including the main rendering / style alpha!!
+        imgui.ImVec4(pow(R,1/2.2), pow(G,1/2.2), pow(B,1/2.2), 1))  # Important: this is still including the main rendering / style alpha!!
 
     # 圆环上的 按钮
     if flags & imgui.ColorEditFlags_.picker_hue_wheel:
@@ -359,8 +388,10 @@ def colorpicker(label, color, flags, ref_col=None):
         imgui.get_window_draw_list().add_triangle(tra, trb, trc, col_midgrey, 0)
         sv_cursor_pos = imgui.internal.im_lerp(imgui.internal.im_lerp(trc, tra, imgui.internal.im_saturate(S)), trb,
                                                imgui.internal.im_saturate(1 - V))
+
     sv_cursor_rad = wheel_thickness * 0.55 if value_changed_sv else wheel_thickness * 0.4
     sv_cursor_segments = imgui.get_window_draw_list()._calc_circle_auto_segment_count(sv_cursor_rad)
+    # 游标颜色
     imgui.get_window_draw_list().add_circle_filled(sv_cursor_pos, sv_cursor_rad, user_col32_striped_of_alpha,
                                                    sv_cursor_segments)
     imgui.get_window_draw_list().add_circle(sv_cursor_pos, sv_cursor_rad + 1, col_midgrey, sv_cursor_segments)

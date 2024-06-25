@@ -1,81 +1,5 @@
 import bpy
 import gpu
-from gpu_extras.batch import batch_for_shader
-
-c_vertex_shader = """
-// 顶点着色器
-uniform mat4 ModelViewProjectionMatrix;
-
-in vec2 pos;
-in vec3 color; // 添加颜色输入
-out vec3 v_color; // 输出到片段着色器的颜色
-
-void main() {
-    gl_Position = ModelViewProjectionMatrix * vec4(pos, 1.0, 1.0);
-    v_color = color; // 直接传递颜色
-}
-"""
-
-c_fragment_shader = """
-// 片段着色器
-in vec3 v_color;
-out vec4 fragColor;
-
-void main() {
-    fragColor = vec4(v_color, 1.0);
-}
-"""
-
-
-def draw_callback(vertices):
-    # vertices = [(10.0, 10.0), (20.0, 200.0), (30.0, 30.0)]
-    colors = [(1.0, 1.0, 1.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]  # 对应的颜色值
-    shader = gpu.types.GPUShader(c_vertex_shader, c_fragment_shader)
-    batch = batch_for_shader(shader, 'TRIS', {"pos": vertices, "color": colors})
-
-    shader.bind()
-    # shader.uniform_float("ModelViewProjectionMatrix", bpy.context.region_data.perspective_matrix)
-    batch.draw(shader)
-
-
-class DrawColorTriangleOperator(bpy.types.Operator):
-    bl_idname = "view3d.draw_color_triangle_operator"
-    bl_label = "Draw Color Triangle"
-
-    def modal(self, context, event):
-        if event.type == 'ESC':
-            bpy.types.SpaceView3D.draw_handler_remove(self._handle, 'WINDOW')
-            return {'CANCELLED'}
-        return {'PASS_THROUGH'}
-
-    def invoke(self, context, event):
-        if context.area.type == 'VIEW_3D':
-            args = (self, context)
-            self._handle = bpy.types.SpaceView3D.draw_handler_add(draw_callback, args, 'WINDOW', 'POST_PIXEL')
-            context.window_manager.modal_handler_add(self)
-            return {'RUNNING_MODAL'}
-        else:
-            self.report({'WARNING'}, "View3D not found, cannot run operator")
-            return {'CANCELLED'}
-
-
-def menu_func(self, context):
-    self.layout.operator(DrawColorTriangleOperator.bl_idname)
-
-
-def register():
-    bpy.utils.register_class(DrawColorTriangleOperator)
-    bpy.types.VIEW3D_MT_view.append(menu_func)
-
-
-def unregister():
-    bpy.utils.unregister_class(DrawColorTriangleOperator)
-    bpy.types.VIEW3D_MT_view.remove(menu_func)
-
-
-if __name__ == "__main__":
-    register()
-
 from enum import Enum
 from gpu.types import GPUShader
 from gpu_extras.batch import batch_for_shader
@@ -130,20 +54,63 @@ rec_shader_source = (rec_vertex_shader, rec_fragment_shader)
 tri_vertex_shader = """
 uniform mat4 ModelViewProjectionMatrix;
 in vec2 pos;
-in vec3 color;
-out vec3 v_color;
+uniform vec4 XxYy;
 
+out float S; // 输出到片元着色器的饱和度
+out float L; // 输出到片元着色器的饱和度
 void main()
-{
+{   
+    L =(pos.y - XxYy.w) / (XxYy.z - XxYy.w);
+    if ((pos.y - XxYy.w)<0.000001)
+        {S=0.0;}
+    else{
+        S =(pos.x - XxYy.y) / (L*(XxYy.z-XxYy.w)*1.73205);   
+    }
+    
     gl_Position = ModelViewProjectionMatrix * vec4(pos, 0.0, 1.0);
-    v_color = color; // 直接传递颜色
+    
 }
 """
 
 tri_fragment_shader = """
+in float S; // 从顶点着色器接收的饱和度
+in float L; // 从顶点着色器接收的饱和度
 uniform float h;
-in vec3 v_color;
 out vec4 fragColor;
+vec4 srgb_to_linear(vec4 srgb) {
+                        return mix(
+                            pow((srgb + 0.055) / 1.055, vec4(2.4)),
+                            srgb / 12.92,
+                            step(srgb, vec4(0.04045))
+                        );
+                    }
+vec3 hls2rgb(vec3 hls) {
+    float h = hls.x;
+    float l = hls.y;
+    float s = hls.z;
+    if (s == 0.0) {
+        return vec3(l); // 当饱和度为0时，返回等于亮度的灰色
+    } else {
+        float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
+        float p = 2.0 * l - q;
+        vec3 rgb = vec3(h + 1.0/3.0, h, h - 1.0/3.0);
+
+        for(int i = 0; i < 3; i++) {
+            if (rgb[i] < 0.0) rgb[i] += 1.0;
+            if (rgb[i] > 1.0) rgb[i] -= 1.0;
+
+            if (rgb[i] < 1.0/6.0)
+                rgb[i] = p + (q - p) * 6.0 * rgb[i];
+            else if (rgb[i] < 1.0/2.0)
+                rgb[i] = q;
+            else if (rgb[i] < 2.0/3.0)
+                rgb[i] = p + (q - p) * (2.0/3.0 - rgb[i]) * 6.0;
+            else
+                rgb[i] = p;
+        }
+        return rgb;
+    }
+}
 vec3 hsv2rgb(vec3 c)
 {
     // 定义一个向量K，用于辅助HSV到RGB的转换
@@ -154,8 +121,11 @@ vec3 hsv2rgb(vec3 c)
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 void main()
-{
-    fragColor = vec4(pow(hsv2rgb(vec3(h,v_color.y,v_color.z)), vec3(2.2)),1.0);
+{   
+    vec3 rgb=hls2rgb(vec3(h,L,S));
+    //fragColor = vec4(rgb,1.0);
+    fragColor = vec4(pow(vec3(S,0.0,0.0),vec3(2.2)),1.0);
+    //fragColor = srgb_to_linear(vec4(rgb,1.0));
 }
 """
 tri_shader_source = (tri_vertex_shader, tri_fragment_shader)
@@ -349,20 +319,17 @@ def draw_rec(center, radius, hue, Shader=Shader_cls.Rectangle()):
     batch.draw(Shader)
     RstPoint()
 
-
-from struct import pack
-
-
-def draw_tri(vertices, hue, colors, Shader=Shader_cls.Triangle()):
+def draw_tri(vertices, hue, colors, shader_tri=Shader_cls.Triangle()):
     # draw_callback(vertices)
-    # vertices = [(-1.0, 1.0), (-1.0, -1.0), (1.0, 0.0)]
+    # vertices = [-1.0, 1.0,0.0,0.0, -1.0, -1.0,1.0,0.0, 1.0, 0.0,1.0,1.0]
     # colors = [(1.0, 1.0, 1.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]  # 对应的颜色值
     print('color1',hue)
-    shader = gpu.types.GPUShader(tri_vertex_shader, tri_fragment_shader)
-    batch = batch_for_shader(shader, 'TRIS', {"pos": vertices, "color": colors})
-    shader.uniform_float("h", hue)
+    batch = batch_for_shader(shader_tri, 'TRIS', {"pos": vertices})
+    # batch = batch_for_shader(Shader, 'TRIS', {"pos": vertices, "color": colors})
+    print((vertices[0][0], vertices[1][0], vertices[1][1], vertices[2][1]))
+    print("XxYy.x", vertices[0][0], "XxYy.y", vertices[1][0])
     print(bpy.context.tool_settings.vertex_paint.brush.color.h)
-    shader.bind()
-
-    # shader.uniform_float("ModelViewProjectionMatrix", bpy.context.region_data.perspective_matrix)
-    batch.draw(shader)
+    shader_tri.bind()
+    shader_tri.uniform_float("XxYy", (vertices[0][0], vertices[1][0], vertices[1][1], vertices[2][1]))
+    shader_tri.uniform_float("h", hue)
+    batch.draw(shader_tri)
