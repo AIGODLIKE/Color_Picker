@@ -17,12 +17,21 @@ def color_edit_restore_hs(color, H, S, V):
     if (
             g_Gimgui.color_edit_saved_id != g_Gimgui.color_edit_current_id or g_Gimgui.color_edit_saved_color != imgui.color_convert_float4_to_u32(
         imgui.ImVec4(color[0], color[1], color[2], 0))):
-        return H, S, V
+        print('aaaa')
+        # return
     if (S == 0.0 or (H == 0.0 and g_Gimgui.color_edit_saved_hue == 1)):
         H = g_Gimgui.color_edit_saved_hue
     if V == 0.0:
         S = g_Gimgui.color_edit_saved_sat
+    print('bbb',H, S, V)
     return H, S, V
+def color_edit_restore_h(color, H):
+    g_Gimgui = imgui.get_current_context()
+    assert g_Gimgui.color_edit_current_id != 0
+    if g_Gimgui.color_edit_saved_id!=g_Gimgui.color_edit_current_id or g_Gimgui.color_edit_saved_color != imgui.color_convert_float4_to_u32(imgui.ImVec4(color[0], color[1], color[2], 0)):
+        return H
+    print('g_Gimgui.color_edit_saved_hue',g_Gimgui.color_edit_saved_hue)
+    return g_Gimgui.color_edit_saved_hue if g_Gimgui.color_edit_saved_hue is not None else H
 def get_wheeL_tri(mouse_pos):
 
     sv_picker_size = 256
@@ -72,7 +81,7 @@ def get_wheeL_tri(mouse_pos):
     ]
     # return (wheel_center.x,wheel_center.y),tra, trb, trc
     return list
-def colorpicker(label, color, flags, ref_col=None):
+def colorpicker(label, color, flags, ops):
     # 拾取器 上下文
     g_Gimgui = imgui.get_current_context()
     window = imgui.internal.get_current_window()
@@ -168,18 +177,22 @@ def colorpicker(label, color, flags, ref_col=None):
     offset_r_bot = imgui.ImVec2(triangle_r/ sqrt2, triangle_r /  sqrt2)
     # print(triangle_pc.y,triangle_pb.y)
     # print(triangle_pc.y-triangle_pb.y)
-    H = color.h
-    S = color.s
-    V = color.v
+    H = color.hsv[0]
+    S = color.hsv[1]
+    V = color.hsv[2]
     R = color[0]
     G = color[1]
     B = color[2]
     # print('imgui picker_pos3111222', picker_pos)
     if flags & imgui.ColorEditFlags_.input_rgb:
+
         H, S, V = imgui.color_convert_rgb_to_hsv(R, G, B, H, S, V)
+        print('11', H, S, V)
         H, S, V = color_edit_restore_hs(color.hsv, H, S, V)
+        print('22', H, S, V)
     elif flags & imgui.ColorEditFlags_.input_hsv:
         R, G, B = imgui.color_convert_hsv_to_rgb(H, S, V, R, G, B)
+        print('33', R, G, B)
     # 初始化变量，用于跟踪颜色值的变化
     value_changed = False
     value_changed_h = False
@@ -262,6 +275,9 @@ def colorpicker(label, color, flags, ref_col=None):
         if color_edit_active_component == 'square':
             S = imgui.internal.im_saturate((io.mouse_pos.x - (wheel_center+offset_l_up).x) / (quad_size - 1))
             V = 1.0 - imgui.internal.im_saturate((io.mouse_pos.y - (wheel_center+offset_l_up).y) / (quad_size - 1))
+            print(H)
+            H=color_edit_restore_h(color,H)
+            print('H=color_edit_restore_h(color,H)',H)
             # H,S,V=color_edit_restore_hs(color,H,S,V)
             value_changed = value_changed_sv = True
 
@@ -270,6 +286,7 @@ def colorpicker(label, color, flags, ref_col=None):
             H = math.atan2(current_off.y, current_off.x) / math.pi * 0.5
             if H < .0:
                 H += 1.0
+            print('wheel',H)
             value_changed = value_changed_h = True
             # 重置激活的控件状态
         if not imgui.is_item_active():
@@ -283,38 +300,37 @@ def colorpicker(label, color, flags, ref_col=None):
         pass
     imgui.internal.pop_item_flag()
     # print('imgui picker_pos3', picker_pos)
-    if not (flags & imgui.ColorEditFlags_.no_side_preview):
-        imgui.same_line(0, style.item_inner_spacing.x)
-        imgui.begin_group()
-
-    if not (flags & imgui.ColorEditFlags_.no_label):
-        label_display_end = imgui.internal.find_rendered_text_end(label)
-        if label != label_display_end:
-            if flags & imgui.ColorEditFlags_.no_side_preview:
-                imgui.same_line(0, style.item_inner_spacing.x)
-            imgui.internal.text_ex(label, label_display_end)
-
-    if not (flags & imgui.ColorEditFlags_.no_side_preview):
-        imgui.internal.push_item_flag(imgui.internal.ItemFlags_.no_nav_default_focus, True)
-        if flags & imgui.ColorEditFlags_.no_alpha:
-            col_v4 = imgui.ImVec4(color[0], color[1], color[2], 1.0)
-        else:
-            col_v4 = imgui.ImVec4(color[0], color[1], color[2], 1)
-        if flags & imgui.ColorEditFlags_.no_label:
-            pass
-        flag = imgui.ColorEditFlags_
-        sub_flags_to_forward = flag.input_mask_ | flag.hdr | flag.alpha_preview | flag.alpha_preview_half | flag.no_tooltip
-        imgui.color_button("##current", col_v4, (flags & sub_flags_to_forward),
-                           imgui.ImVec2(square_sz * 3, square_sz * 2))
-        imgui.internal.pop_item_flag()
-        imgui.end_group()
+    # if not (flags & imgui.ColorEditFlags_.no_side_preview):
+    #     imgui.same_line(0, style.item_inner_spacing.x)
+    #     imgui.begin_group()
+    #
+    # if not (flags & imgui.ColorEditFlags_.no_label):
+    #     label_display_end = imgui.internal.find_rendered_text_end(label)
+    #     if label != label_display_end:
+    #         if flags & imgui.ColorEditFlags_.no_side_preview:
+    #             imgui.same_line(0, style.item_inner_spacing.x)
+    #         imgui.internal.text_ex(label, label_display_end)
+    #
+    # if not (flags & imgui.ColorEditFlags_.no_side_preview):
+    #     imgui.internal.push_item_flag(imgui.internal.ItemFlags_.no_nav_default_focus, True)
+    #     if flags & imgui.ColorEditFlags_.no_alpha:
+    #         col_v4 = imgui.ImVec4(color[0], color[1], color[2], 1.0)
+    #     else:
+    #         col_v4 = imgui.ImVec4(color[0], color[1], color[2], 1)
+    #     if flags & imgui.ColorEditFlags_.no_label:
+    #         pass
+    #     flag = imgui.ColorEditFlags_
+    #     sub_flags_to_forward = flag.input_mask_ | flag.hdr | flag.alpha_preview | flag.alpha_preview_half | flag.no_tooltip
+    #     imgui.color_button("##current", col_v4, (flags & sub_flags_to_forward),
+    #                        imgui.ImVec2(square_sz * 3, square_sz * 2))
+    #     imgui.internal.pop_item_flag()
+    #     imgui.end_group()
     # print('imgui picker_pos4', picker_pos)
     # // Convert back color to RGB
     if value_changed_h or value_changed_sv:
         if flags & imgui.ColorEditFlags_.input_rgb:
 
-            color.h, color.s, color.v=imgui.color_convert_hsv_to_rgb(H, S, V, color.h, color.s, color.v)
-
+            color[0],color[1],color[2]=imgui.color_convert_hsv_to_rgb(H, S, V, color[0],color[1],color[2])
             g_Gimgui.color_edit_saved_hue = H
             g_Gimgui.color_edit_saved_sat = S
             g_Gimgui.color_edit_saved_id = g_Gimgui.color_edit_current_id
@@ -341,13 +357,16 @@ def colorpicker(label, color, flags, ref_col=None):
         new_H, new_S, new_V = .0, .0, .0
         new_H, new_S, new_V = imgui.color_convert_rgb_to_hsv(color.h, color.s, color.v, new_H, new_S, new_V)
         if new_H <= .0 and H > .0:
-
+            pass
             if new_V <= 0 and V != new_V:
                 color[0], color[1], color[2] = imgui.color_convert_hsv_to_rgb(H, S, V * 0.5 if new_V <= 0 else new_V,
                                                                               color[0], color[1], color[2])
+                color.hsv = (H, S, V)
             elif new_S <= 0:
                 color[0], color[1], color[2] = imgui.color_convert_hsv_to_rgb(H, S * 0.5 if new_S <= 0 else new_S,
                                                                               color[0], color[1], color[2])
+                color.hsv=(H,S,V)
+        print('cccccccccccccc',H,color.h)
     # print('imgui picker_pos5', picker_pos)
     if value_changed:
         if flags & imgui.ColorEditFlags_.input_rgb:
@@ -485,6 +504,9 @@ def colorpicker(label, color, flags, ref_col=None):
     # print('backup_initial_col', H, S, V)
     # print('backup_initial_col', color[0], color[1], color[2])
     print('picker',H,color.h)
+    ops.h=H
+    ops.s=S
+    ops.v=V
     return value_changed,picker_pos,picker_pos2,wheel_center
 
 def color_bar(color,color_hsv,color_rgb,ops):

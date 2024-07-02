@@ -361,7 +361,7 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
             # if imgui.is_any_item_hovered():
                 # self.color_palette.insert(0,copy.deepcopy(color))
                 # print('is_mouse_clicked(1)', imgui.internal.get_hovered_id())
-        colorpicker_changed,picker_pos,picker_pos2,wheel_center=colorpicker('##aa',color,misc_flags)
+        colorpicker_changed,picker_pos,picker_pos2,wheel_center=colorpicker('##aa',color,misc_flags,self)
         imgui.same_line()
         imgui.begin_group()
         global color_hsv, color_rgb,color_tmp,color_palette_dict
