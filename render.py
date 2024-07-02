@@ -18,13 +18,9 @@ class Renderer(BaseOpenGLRenderer):
                 out vec2 Frag_UV;
                 out vec4 final_col;
                 uniform mat4 ProjMtx;
-                
                 void main() {
                     Frag_UV = UV;
                     final_col=Color;
-                    final_col.rgb = pow(final_col.rgb,vec3(2.2));
-                    final_col.rgb*=vec3(final_col.a);
-                    final_col.a=1.0-pow(1.0-final_col.a,2.2);
                     gl_Position = ProjMtx * vec4(Position.xy, 0, 1);
                 }
                 """
@@ -33,29 +29,13 @@ class Renderer(BaseOpenGLRenderer):
                     in vec4 final_col;
                     out vec4 Frag_Color;
                     uniform sampler2D Texture;
-                    vec4 linear_to_srgb(vec4 linear) {
-                        return mix(
-                            1.055 * pow(linear, vec4(1.0 / 2.4)) - 0.055,
-                            12.92 * linear,
-                            step(linear, vec4(0.0031308))
-                        );
-                    }
-
-                    vec4 srgb_to_linear(vec4 srgb) {
-                        return mix(
-                            pow((srgb + 0.055) / 1.055, vec4(2.4)),
-                            srgb / 12.92,
-                            step(srgb, vec4(0.04045))
-                        );
-                    }
-
-                    void main() {
-                        
-                        Frag_Color = final_col; // 输出sRGB颜色
-                        Frag_Color  = (texture(Texture, Frag_UV.st)) *Frag_Color;
-                        Frag_Color.rgb = pow(Frag_Color.rgb,vec3(2.2)); // 输出sRGB颜色
-                        Frag_Color.a = pow(Frag_Color.a,2.2); // 输出sRGB颜色
-                    }
+    
+                    void main() {                   
+                        Frag_Color = final_col;
+                        Frag_Color.rgb = pow(Frag_Color.rgb,vec3(2.2)); 
+                        Frag_Color.a = 1.0 - pow((1.0 - Frag_Color.a),2.2);
+                        Frag_Color  = (texture(Texture, Frag_UV.st)) *Frag_Color;                     
+                    }   
                                                 """
     instance = None
 
@@ -147,6 +127,7 @@ class Renderer(BaseOpenGLRenderer):
         # 如果帧缓冲区宽度或高度为0，则退出函数
         if fb_width == 0 or fb_height == 0:
             return
+
 
         # 根据显示缩放比例调整剪裁矩形
         draw_data.scale_clip_rects(io.display_framebuffer_scale)

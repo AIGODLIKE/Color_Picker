@@ -1,22 +1,22 @@
 # import imgui
-import math
-from .widget import get_wheeL_tri
+import copy
+import math,bpy
+import colorsys
+from .widget import get_wheeL_tri,convert_hsv2rgb32_color3,color_bar,colorpicker,color_palette
+from .utils import get_brush_color_based_on_mode
 from mathutils import Vector
 import time
-color=[1,1,1,1]
-# 逆时针
-colors=[#a              b                   c
-    # [(0.0,0.5,2.0/3.0),(0.0,0.0,1.0),(0.0,0.0,0.5)],
-    # [(0.0,0.5,2.0/3.0),(0.0,0.0,1.0),(0.0,0.5,1.0)],
-    # [(0.0,0.5,2.0/3.0),(0.0,1.0,1.0),(0.0,0.5,1.0)],
-    # [(0.0,0.5,2.0/3.0),(0.0,1.0,1.0),(0.0,1.0,0.5)],
-    # [(0.0,0.5,2.0/3.0),(0.0,1.0,0.0),(0.0,1.0,0.5)],
-    # [(0.0,0.5,2.0/3.0),(0.0,1.0,0.0),(0.0,0.0,0.5)],
-    # [(0.0,0.5,2.0/3.0),(0.0,0.0,1.0),(0.0,1.0,0.0)],
-    [(0.0,0.5,1.0),(0.0,1.0,0.0),(0.0,0.0,0.0)],
-        ]
-from .utils import get_imgui_widget_center
 
+
+color_hsv = [0, 0, 0]
+color_rgb = [0, 0, 0]
+colors=[]
+color_palette_size=40
+color_palette_dict={}
+#colorbar 颜色拾取处理,拖动bar的最后一个色彩存入colors[0]
+color_tmp=[]
+
+values = [0.0, 0.60, 0.35, 0.9, 0.70, 0.20, 0.0]
 color_picker_color = (114, 144, 154, 200)
 color_picker_alpha_preview = True
 color_picker_alpha_half_preview = False
@@ -39,14 +39,11 @@ from .extern.imgui_bundle import imgui
 from pathlib import Path
 from gpu_extras.presets import draw_texture_2d
 from .render import Renderer as BlenderImguiRenderer
-from .shader import draw_rec,draw_tri
+from .shader import draw_rec,draw_tri,draw_circle
 import gpu
 
 class GlobalImgui:
     _instance = None
-
-    # def __init__(self):
-    #     self.imgui_context = None
 
     def __init__(self):
         self.imgui_context = None
@@ -79,20 +76,6 @@ class GlobalImgui:
             self.setup_key_map()
             print('初始化imgui')
 
-    # def init_imgui(self):
-    #     if self.imgui_context:
-    #         return
-    #     self.imgui_context = imgui.create_context()
-    #     # self.init_font()
-    #     self.imgui_backend = BlenderImguiRenderer()
-    #     self.imgui_backend.refresh_font_texture_ex()
-    #     self.setup_key_map()
-    #
-    #     self.draw_handlers = {}
-    #     self.callbacks = {}
-    #     self.next_callback_id = 0
-    # print(f'next_callback_id,{self.next_callback_id} ')
-    # print('初始化imgui')
 
     def shutdown_imgui(self):
         # print('self.draw_handlers.items()',self.draw_handlers.items())
@@ -104,7 +87,7 @@ class GlobalImgui:
 
         # print('关闭imgui,移除句柄',self.draw_handlers.items())
 
-    def handler_add(self, callback, SpaceType, show_window_pos,verts):
+    def handler_add(self, callback, SpaceType, show_window_pos,verts,ops):
         """
         @param callback The draw function to add
         @param SpaceType Can be any class deriving from bpy.types.Space
@@ -116,9 +99,9 @@ class GlobalImgui:
             self.init_imgui()
         # print(self.draw_handlers)
         if SpaceType not in self.draw_handlers:
-            self.draw_handlers[SpaceType] = SpaceType.draw_handler_add(self.draw, (SpaceType, show_window_pos,verts),
+            self.draw_handlers[SpaceType] = SpaceType.draw_handler_add(self.draw, (SpaceType, show_window_pos,verts,ops),
                                                                        'WINDOW', 'POST_PIXEL')
-            print('SpaceType',SpaceType)
+            # print('SpaceType',SpaceType)
             # print('添加句柄,绘制回调,开始帧')
         # print(f'next_callback_id,{self.next_callback_id} ')
         handle = self.next_callback_id
@@ -151,8 +134,10 @@ class GlobalImgui:
         style.window_rounding = 2
         style.frame_rounding = 2
         style.frame_border_size = 1
-
-    def draw(self, area, show_window_pos,verts):
+        # style = imgui.get_current_context().style
+        # bg color
+        style.set_color_(2, imgui.ImVec4(0, 0, 0, 0.55))
+    def draw(self, area, show_window_pos,verts,ops):
         a = time.time()
         context = bpy.context
         self.apply_ui_settings()  # 应用用户界面设置
@@ -166,7 +151,8 @@ class GlobalImgui:
         imgui.push_style_color(imgui.Col_.frame_bg_active.value, title_bg_active_color)
         imgui.push_style_color(imgui.Col_.frame_bg.value, frame_bg_color)
         imgui.get_style().set_color_(5, imgui.ImVec4(0, 0, 0, 0))
-        imgui.push_style_var(20, 3)
+        # print('imgui.get_style().grab_min_size',imgui.get_style().grab_min_size)
+        imgui.push_style_var(20, 1)
         invalid_callback = []  # 创建一个列表来存储无效的回调函数
 
         for cb, SpaceType in self.callbacks.values():
@@ -181,21 +167,8 @@ class GlobalImgui:
 
         # 使用自定义渲染器渲染 ImGui 绘制数据
         self.imgui_backend.render(imgui.get_draw_data())
-        color = context.tool_settings.vertex_paint.brush.color.h
-        # mouse_pos = imgui.get_mouse_pos(show_window_pos)
-        # verts=get_wheeL_tri(show_window_pos)[1:]
-        # print('verts',list(verts[1:]))
-        # print('color',color)
-        global colors
-        # verts=[(-1.0, 1.0), (-1.0, -1.0), (1.0, 0.0)]
-        # print('三角 中心',verts[0])
-        # gpu.state.blend_set('ALPHA')
-        # gpu.state.depth_test_set('LESS_EQUAL')
-        # for i in range(1):
-        #     draw_tri(verts[i], context.tool_settings.vertex_paint.brush.color.h,colors[i])
-        # draw_rec(show_window_pos, 16, context.tool_settings.vertex_paint.brush.color.h)
-        # print('global',time.time() - a)
-        # gpu.state.depth_test_set('NONE')
+        # draw_rec(ops.show_window_pos, 71.5, get_brush_color_based_on_mode().h)
+        # draw_circle(ops.mpos, 10,(*get_brush_color_based_on_mode(),1),(1,1,1,1))
 
     def setup_key_map(self):
         io = imgui.get_io()
@@ -233,9 +206,6 @@ def inbox(x, y, w, h, mpos):
         return True
     return False
 
-
-# def imgui_handler_add(callback, SpaceType, show_window_pos):
-#     return GlobalImgui.get().handler_add(callback, SpaceType, show_window_pos)
 
 
 def imgui_handler_remove(handle):
@@ -281,9 +251,8 @@ class BaseDrawCall:
 
     def draw(self, context):
         pass
-
     def init_imgui(self, contxt):
-        self.imgui_handle = GlobalImgui.get().handler_add(self.draw, bpy.types.SpaceView3D, self.show_window_pos,self.verts)
+        self.imgui_handle = GlobalImgui.get().handler_add(self.draw, bpy.types.SpaceView3D, self.show_window_pos,self.verts,self)
         # self.imgui_handle=GlobalImgui.get().handler_add(self.draw,bpy.types.SpaceView3D)
 
     def call_shutdown_imgui(self):
@@ -298,13 +267,9 @@ class BaseDrawCall:
         # is_item_focused 当前项(窗口中的)被聚焦
         # is_any_item_hovered 有任何项被聚焦
         # hover 不一定 focus,  focus也不一定hover
+        # print('cover',imgui.is_item_hovered(),imgui.is_item_focused())
         self.cover |= imgui.is_any_item_hovered() or imgui.is_window_hovered()
         # print(imgui.is_any_item_hovered() , imgui.is_window_hovered())
-
-    # def clear(self):
-    #     # 移除绘制处理器
-    #     GlobalImgui().get().handler_remove(self.draw_call)
-    #     print(GlobalImgui().get().callbacks)
 
     def poll_mouse(self, context: bpy.types.Context, event: bpy.types.Event):
         io = imgui.get_io()  # 获取 ImGui 的 IO 对象
@@ -345,116 +310,106 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
     bl_idname = "imgui.gui_test"
     bl_label = "Gui Test"
     bl_options = {'REGISTER', 'UNDO'}
-    # @classmethod
-    # def poll(cls, context):
-    #     return context.mode in {'SCULPT', 'PAINT_VERTEX', 'PAINT_TEXTURE'}
+    @classmethod
+    def poll(cls, context):
+        sculpt=False
+        if bpy.context.mode=='SCULPT' and bpy.context.tool_settings.sculpt.brush==bpy.data.brushes['Paint']:
+            sculpt= True
+
+        return (context.mode in {'PAINT_VERTEX', 'PAINT_TEXTURE','PAINT_GPENCIL','VERTEX_GPENCIL',}) or sculpt
     def draw(self, context: bpy.types.Context):
         a = time.time()
+
         self.cover = False
         # 展示一个 ImGui 测试窗口
-
         wf = imgui.WindowFlags_
-        # window_flags=wf.no_title_bar|wf.no_resize|wf.no_scrollbar|wf.always_auto_resize
-        window_flags = wf.no_title_bar | wf.no_resize | wf.no_scrollbar|wf.always_auto_resize
+        window_flags=wf.no_title_bar|wf.no_resize|wf.no_scrollbar|wf.always_auto_resize|wf.no_background
+        window_flags=wf.no_title_bar|wf.no_resize|wf.no_scrollbar|wf.always_auto_resize
+
+        # window_flags = wf.no_title_bar
         # window_flags = 0
         # imgui.set_next_window_size(imgui.ImVec2(570,240))
         # if not self.show_window_imgui:
         imgui.set_next_window_pos(
-            imgui.ImVec2(self.show_window_pos[0] - 128, context.region.height - self.show_window_pos[1] - 128))
+            imgui.ImVec2(self.show_window_pos[0] - 127-imgui.get_style().indent_spacing*0.5, context.region.height - self.show_window_pos[1] - 129-10))
         #     self.show_window_imgui = True
-        # print('imgui mouse', imgui.get_mouse_pos(), imgui.get_window_size())
+
         imgui.begin("Your first window!", True, window_flags)
-        # imgui.text("Hello world!")
-        # imgui.text("Another line!")
-        imgui.text("")
-        # imgui.ColorEditFlags_.picker_hue_wheel
+
+        # imgui.text("")
+        start_pos = imgui.get_cursor_pos() + imgui.ImVec2(0, 10)
+        imgui.set_cursor_pos(start_pos)
+        get_window_pos = imgui.get_window_pos()
+        get_cursor_start_pos = imgui.get_cursor_start_pos()
+        get_cursor_screen_pos = imgui.get_cursor_screen_pos()
         im_cf=imgui.ColorEditFlags_
         misc_flags = im_cf.picker_hue_wheel | im_cf.no_options|im_cf.input_rgb | im_cf.no_alpha | im_cf.no_side_preview | im_cf.no_label
-        # imgui.get_window_draw_list().
-        # imgui.text("Color button only:")
-        # p3 = imgui.get_cursor_screen_pos()
-        # print(p3)
-        # imgui.set_next_item_width(254)
-        # changed1, self.color4 = imgui.color_picker4("MyColor", imgui.ImVec4(self.color4), misc_flags)  # type: ignore
-        from .widget import colorpicker
-        global color
-        # print('aa', color)
-        changed1=colorpicker('aa',bpy.context.tool_settings.vertex_paint.brush.color,misc_flags)
-        # print('bb',color)
-        # print(333, self.color4[0], self.color4[1], self.color4[2])
-        # print('hei', imgui.get_frame_height())
-        # imgui.same_line()
-        # changed2, bpy.context.tool_settings.vertex_paint.brush.color=imgui.color_edit3("##RefColor",bpy.context.tool_settings.vertex_paint.brush.color, misc_flags)
-        # changed1, bpy.context.tool_settings.vertex_paint.brush.color=imgui.color_picker3("MyColor", bpy.context.tool_settings.vertex_paint.brush.color, misc_flags )  # type: ignore
-        # square_sz = imgui.get_frame_height()
-        # bars_width = square_sz
-        # width = imgui.calc_item_width()
+        misc_flags = im_cf.picker_hue_bar | im_cf.no_options|im_cf.input_rgb | im_cf.no_alpha | im_cf.no_side_preview | im_cf.no_label
+        # color = bpy.context.tool_settings.vertex_paint.brush.color
+        color = self.get_brush_color_based_on_mode()
+        # print(color)
+
+        # if not imgui.get_io().mouse_down[0]:
+        #     pre_color=self.pre_color
+        # print('is_mouse_clicked(0)', imgui.is_mouse_clicked(0)).
+        # imgui.color_edit3('aaa',color)
+
         # window = imgui.internal.get_current_window()
-        # picker_pos = window.dc.cursor_pos
-        # sv_picker_size = max(bars_width * 1, width - (
-        #         bars_width + imgui.get_style().item_inner_spacing.x))
-        # wheel_thickness = sv_picker_size * 0.08
-        # wheel_r_outer = sv_picker_size * 0.50
-        # wheel_r_inner = wheel_r_outer - wheel_thickness
-        # wheel_center = imgui.ImVec2(picker_pos.x + (sv_picker_size + bars_width) * 0.5,
-        #                             picker_pos.y + sv_picker_size * 0.5)
-        # aeps = 0.5 / wheel_r_outer
-        # Define colors using HSV values and convert them to ImU32
-        col_a = convert_color(0, 0.0, 1.0)  # White: H = 0, S = 0%, V = 100%
-        col_b = convert_color(0, 1.0, 1.0)  # Red: H = 0, S = 100%, V = 100%
-        col_c = convert_color(0, 1.0, 1.0)  # Green: H = 120°, S = 100%, V = 100%
-        col_d = convert_color(0, 0.0, 1.0)  # Black: H = 0, S = 0%, V = 0%
-
-        # imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0], p0[1]), imgui.ImVec2(p1[0], p1[1]),
-        #                                                          col_a, col_b, col_c, col_d)
-        # imgui.get_window_draw_list().add_triangle_filled(imgui.ImVec2(p1[0],p0[1]),imgui.ImVec2(p1[0], p1[1]),imgui.ImVec2(p1[0]-1.732050807*gradient_size[0]/2, p0[1]+gradient_size[0]/2),col_b)
-        # imgui.invisible_button("##gradient2", imgui.ImVec2(gradient_size[0], gradient_size[0]))
-        # imgui.ImDrawList.add_triangle()
+        # window.get_id('hsv_picker')
+        if imgui.is_mouse_clicked(0):
+            self.pre_color = copy.deepcopy(color)
+            # if imgui.is_any_item_hovered():
+                # self.color_palette.insert(0,copy.deepcopy(color))
+                # print('is_mouse_clicked(1)', imgui.internal.get_hovered_id())
+        colorpicker_changed,picker_pos,picker_pos2,wheel_center=colorpicker('##aa',color,misc_flags)
         imgui.same_line()
-        values = [0.0, 0.60, 0.35, 0.9, 0.70, 0.20, 0.0]
-        imgui.push_id('set')
-        lines = ['H', 'S', 'V', 'R', 'G', 'B']
         imgui.begin_group()
-        for i in range(6):
-            imgui.set_next_item_width(256)
-            imgui.push_style_color(imgui.Col_.frame_bg, imgui.ImVec4(1 / 7.0, 0.6, 1, 0))
-            imgui.push_style_color(imgui.Col_.frame_bg_hovered, imgui.ImVec4(1 / 7.0, .7, 1, 0))
-            imgui.push_style_color(imgui.Col_.frame_bg_active, imgui.ImVec4(1 / 7.0, .8, 1, 0))
-            imgui.push_style_color(imgui.Col_.slider_grab, imgui.ImVec4(1 / 7.0, 0.5, 1, 1))
-            # imgui.push_style_color(imgui.Col_.border,imgui.ImVec4(1/7.0, 1, 1,0))
-            gradient_size = [imgui.calc_item_width(), imgui.get_frame_height()]
+        global color_hsv, color_rgb,color_tmp,color_palette_dict
+        color_bar_changed=color_bar(color,color_hsv, color_rgb,self)
+        if  imgui.is_mouse_down(0):
+            if color_bar_changed:
+                color_tmp=copy.deepcopy(color)
+            id = imgui.get_current_context().hovered_id
+            # print(color_palette_dict.keys())
+            if hasattr(color_palette_dict, f'c{id}'):
+                self.color_palette.insert(0, copy.deepcopy(color_palette_dict[id]))
+        elif imgui.is_mouse_released(0):
+            # print('`111',colorpicker_changed, color_bar_changed)
+            if colorpicker_changed:
+                self.color_palette.insert(0,copy.deepcopy(color))
+                # print('is_mouse_clicked(1)', imgui.internal.get_hovered_id())
+        # print('`111',colorpicker_changed, color_bar_changed)
 
-            p0 = imgui.get_cursor_screen_pos()
+        if imgui.is_mouse_released(0):
+            if color_tmp!=[] and not colorpicker_changed:
 
-            p1 = (p0.x + gradient_size[0], p0.y + gradient_size[1])
-            imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
-                                                                     imgui.ImVec2(p1[0] - 2, p1[1]),
-                                                                     imgui.get_color_u32(
-                                                                         imgui.ImVec4(255, 255, 255, 1)),
-                                                                     imgui.get_color_u32(imgui.ImVec4(255, 0, 0, 1)),
-                                                                     imgui.get_color_u32(imgui.ImVec4(255, 0, 0, 1)),
-                                                                     imgui.get_color_u32(imgui.ImVec4(255, 255, 255, 1))
-                                                                     )
-            changed, self.c = imgui.slider_float(lines[i], values[i], 0.0, 1.0, "")
-
-            if imgui.is_item_active() or imgui.is_item_hovered():
-                imgui.set_tooltip(f'{self.c:.3f}')
-            imgui.pop_style_color(4)
-
+                ids=[imgui.get_id(i) for i in ['H ', 'S ', 'V ', 'R ', 'G ', 'B ']]
+                if imgui.get_current_context().hovered_id in ids:
+                    self.color_palette.insert(0, copy.deepcopy(color_tmp))
+        # print(imgui.get_current_context().hovered_id,[imgui.get_id(i) for i in 'RGBHSV'])
+        color_palette('##color_palette',color,self.backup_color,self.pre_color,self.color_palette)
         imgui.end_group()
-
-        imgui.pop_id()
         imgui.text("")
-        imgui.show_demo_window()
+        # imgui.show_demo_window()
+
 
         self.track_any_cover()
         if imgui.is_item_hovered():
             imgui.set_keyboard_focus_here(-1)
 
         imgui.end()
-
-        # print('draw',time.time() - a)
-
+        imgui.begin("mes", True, window_flags)
+        imgui.text(f'blender鼠标:{self.show_window_pos[0], self.show_window_pos[1]}')
+        imgui.text(f'imgui  鼠标:{imgui.get_mouse_pos().x, imgui.get_mouse_pos().y}')
+        imgui.text(f'get_window_pos:{get_window_pos.x, get_window_pos.y}')
+        imgui.text(f'get_cursor_screen_pos:{get_cursor_screen_pos.x, get_cursor_screen_pos.y}')
+        imgui.text(f'get_cursor_start_pos:{get_cursor_start_pos.x, get_cursor_start_pos.y}')
+        imgui.text(f'picker_pos:{picker_pos.x, picker_pos.y}')
+        imgui.text(f'picker_pos2:{picker_pos2.x, picker_pos2.y}')
+        imgui.text(f'wheel_center:{wheel_center.x, wheel_center.y}')
+        imgui.text(f'style.item_spacing indent_spacing:{imgui.get_style().indent_spacing,imgui.get_style().item_spacing.x, imgui.get_style().item_spacing.y}')
+        imgui.text(f'color:{get_brush_color_based_on_mode().h}')
+        imgui.end()
     def invoke(self, context, event):
         a = time.time()
         origin = Vector((event.mouse_region_x, event.mouse_region_y))
@@ -467,16 +422,17 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
         self.message = "Type something here!"
         # self.verts=[(1,1),(1,1),(1,1)]
         self.verts = get_wheeL_tri(self.show_window_pos)
+        self.backup_color=copy.deepcopy(self.get_brush_color_based_on_mode())
+
+        self.pre_color = copy.deepcopy(self.backup_color)
+        global colors,color_palette_size
+        if len(colors) > color_palette_size:
+            del colors[color_palette_size:]
+        self.color_palette = colors
         self.init_imgui(context)
 
-        # if not self.try_reg(self.area, context, origin):
-        # from .shader import draw_callback
-        # self.hand=bpy.types.SpaceView3D.draw_handler_add(draw_callback, (), 'WINDOW', 'POST_PIXEL')
-        #     return {"FINISHED"}
         context.window_manager.modal_handler_add(self)
 
-        # print('预处理数据')
-        # print(time.time() - a)
         return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
@@ -497,18 +453,17 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
         w, h = context.region.width, context.region.height
         if 0 > self.mpos[0] or self.mpos[0] > w or 0 > self.mpos[1] or self.mpos[1] > h:
             return {"PASS_THROUGH"}
-        # print('2')
-
         if event.type in {"ESC"}:
             self.call_shutdown_imgui()
             return {'FINISHED'}
-        # print('3')
         if event.type in {'RIGHTMOUSE'}:
             self.call_shutdown_imgui()
             return {'FINISHED'}
-        # print('4')
-        if context.region:
+        if event.type =='X' and event.value == 'RELEASE':
+            from .utils import exchange_brush_color_based_on_mode
+            exchange_brush_color_based_on_mode(exchange=True)
 
+        if context.region:
             region = context.region
         else:
             self.call_shutdown_imgui()
@@ -524,6 +479,28 @@ class ImguiGuiTest(bpy.types.Operator, BaseDrawCall):
 
         return {"RUNNING_MODAL"}
 
+    @classmethod
+    def get_brush_color_based_on_mode(cls):
+        # 获取当前的模式
+        mode = bpy.context.object.mode
+
+        # 根据不同的模式获取笔刷颜色
+        if mode == 'VERTEX_PAINT':
+            # 在顶点绘制模式下
+            brush = bpy.context.tool_settings.vertex_paint.brush
+            color = brush.color
+        elif mode == 'TEXTURE_PAINT':
+            # 在纹理绘制模式下
+            brush = bpy.context.tool_settings.image_paint.brush
+            color = brush.color
+        elif mode == 'PAINT_GPENCIL':
+            # 在 Grease Pencil 绘制模式下
+            brush = bpy.context.tool_settings.gpencil_paint.brush
+            color = brush.color
+        elif mode=='SCULPT':
+            brush = bpy.data.brushes['Paint']
+            color = brush.color
+        return color
 
 def register_keymaps():
     wm = bpy.context.window_manager

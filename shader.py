@@ -3,8 +3,9 @@ import gpu
 from enum import Enum
 from gpu.types import GPUShader
 from gpu_extras.batch import batch_for_shader
+from gpu_extras.presets import draw_circle_2d
 from gpu.shader import from_builtin
-from gpu.state import point_size_set
+from gpu.state import point_size_set,line_width_set
 
 rec_vertex_shader = """
 uniform mat4 ModelViewProjectionMatrix;
@@ -129,7 +130,24 @@ void main()
 }
 """
 tri_shader_source = (tri_vertex_shader, tri_fragment_shader)
+# CIRCLES
+circle_fs = """
+  uniform vec4 co;
+  out vec4 fragColor;
 
+  void main()
+  {
+    vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+    float rad = dot(cxy, cxy);
+
+    float alpha = smoothstep(0.55, 0.45, abs(rad / 9.5) * 5.0);
+    if (alpha < 0.05)
+      discard;
+    fragColor = co;
+    fragColor.a *= alpha;
+  }
+  """
+circle_shader_source = (rec_vertex_shader, circle_fs)
 
 class ShaderName2D(Enum):
     IMAGE = 'IMAGE'
@@ -291,7 +309,7 @@ def Shader(*shaders) -> GPUShader:
 class Shader_cls(Enum):
     Rectangle = Shader(*rec_shader_source)
     Triangle = Shader(*tri_shader_source)
-
+    Circle=Shader(*circle_shader_source)
     def __call__(self):
         return self.value
 
@@ -305,7 +323,8 @@ def RstPoint():
     '''恢复默认点大小1.0'''
     point_size_set(1.0)
 
-
+def SetLine(lt):line_width_set(lt)
+def RstLine():SetLine(1.0)
 def draw_rec(center, radius, hue, Shader=Shader_cls.Rectangle()):
     '''
     c 中心
@@ -333,3 +352,21 @@ def draw_tri(vertices, hue, colors, shader_tri=Shader_cls.Triangle()):
     shader_tri.uniform_float("XxYy", (vertices[0][0], vertices[1][0], vertices[1][1], vertices[2][1]))
     shader_tri.uniform_float("h", hue)
     batch.draw(shader_tri)
+# 绘制带颜色填充和线条的圆
+def DiCFS(center, radius, color, Shader=Shader_cls.Circle()):
+    '''绘制具有特定着色效果的圆形。
+使用给定的着色器 s 和几何形状 ShaderGeom.CIR(center)（即一个圆）。'''
+    b = batch_for_shader(Shader, ShaderType.POINTS(), ShaderGeom.CIR(center))
+    Shader.bind()
+    SetPoint(Shader, radius)
+    Shader.uniform_float('co', color)
+    b.draw(Shader)
+    RstPoint()
+# 绘制线条和圆
+def DiCLS(center, radius, segments, _lt, color):
+    SetLine(_lt)
+    draw_circle_2d(center, color, radius, segments=segments)
+    RstLine()
+def draw_circle(center, radius, color, line_color):
+    DiCFS(center, radius, color)
+    DiCLS(center, radius, 32, 2, line_color)
