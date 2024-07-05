@@ -1,5 +1,12 @@
-from .extern.imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
-from .extern.imgui_bundle import imgui
+import sys
+if '3.10' in sys.version:
+    from .extern.imgui_bundle3_10.imgui_bundle import imgui
+    from .extern.imgui_bundle3_10.imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
+else:
+    from .extern.imgui_bundle3_11.imgui_bundle import imgui
+    from .extern.imgui_bundle3_11.imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
+# from .extern.imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
+# from .extern.imgui_bundle import imgui
 import gpu
 import bpy
 import ctypes
@@ -192,7 +199,7 @@ class Renderer(BaseOpenGLRenderer):
         # if last_enable_blend:
         #     gpu.state.blend_set(last_enable_blend)
         # else:
-        gpu.state.blend_set('NONE')
+        gpu.state.blend_set('ALPHA')
         # if last_enable_depth_test:
         #     gpu.state.depth_test_set(last_enable_depth_test)
         # else:

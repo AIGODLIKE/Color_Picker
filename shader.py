@@ -144,10 +144,59 @@ circle_fs = """
     if (alpha < 0.05)
       discard;
     fragColor = co;
+    fragColor.rgb=pow(fragColor.rgb,vec3(2.2));
     fragColor.a *= alpha;
   }
   """
 circle_shader_source = (rec_vertex_shader, circle_fs)
+ring_blur = """
+ out vec4 fragColor;
+
+ uniform vec4 co;
+ uniform float Intensity;
+ uniform float range;
+
+ float roundedFrame (float d, float _thickness)
+ {
+   return smoothstep(0.55, 0.45, abs(d / _thickness) * 5.0);
+ }
+
+ void main()
+ {
+   float r = 0.0;
+   vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+   r = dot(cxy, cxy);
+
+   float s = roundedFrame(r, 9.5);
+   if (s < 0.05)
+     discard; 
+
+   // Use polar coordinates instead of cartesian
+   vec2 toCenter = vec2(0.5)-gl_PointCoord.xy;
+   // float angle = atan(toCenter.y,toCenter.x);
+   float radius = length(toCenter)*2.0;
+   float alpha = 1.0;
+
+   float outter = 1.0;
+   float rad = outter - Intensity;
+   float inner = rad - Intensity;
+   if (radius < inner)
+     discard;
+
+
+   if (radius > rad){
+     alpha = smoothstep(outter, rad-range, radius);
+   }
+   else{
+     alpha = smoothstep(inner, rad+range, radius);
+   }
+
+   fragColor = co;
+   fragColor.a = alpha;
+   fragColor.rgb = pow(fragColor.rgb, vec3(2.2));
+ }
+ """
+ring_blur_shader_source = (rec_vertex_shader, ring_blur)
 
 class ShaderName2D(Enum):
     IMAGE = 'IMAGE'
@@ -299,7 +348,7 @@ def Shader(*shaders) -> GPUShader:
         new_shader = GPUShader(*shaders)
     except Exception as e:
         print("----------------------------------------------------------------")
-        print("ERROR! Couldn't create GPUShader:")
+        print("ERROR! Couldn'Intensity create GPUShader:")
         print(e)
         print("----------------------------------------------------------------")
         return None
@@ -310,6 +359,8 @@ class Shader_cls(Enum):
     Rectangle = Shader(*rec_shader_source)
     Triangle = Shader(*tri_shader_source)
     Circle=Shader(*circle_shader_source)
+    Ring_blur=Shader(*ring_blur_shader_source)
+
     def __call__(self):
         return self.value
 
@@ -363,10 +414,16 @@ def DiCFS(center, radius, color, Shader=Shader_cls.Circle()):
     b.draw(Shader)
     RstPoint()
 # 绘制线条和圆
-def DiCLS(center, radius, segments, _lt, color):
-    SetLine(_lt)
-    draw_circle_2d(center, color, radius, segments=segments)
-    RstLine()
+def DiRNGBLR(center, radius, Intensity, range, color, Shader=Shader_cls.Ring_blur()):
+    '''绘制一个有模糊效果的环形，通过参数_t和_f控制模糊的程度和范围。'''
+    b = batch_for_shader(Shader, ShaderType.POINTS(), ShaderGeom.CIR(center))
+    Shader.bind()
+    SetPoint(Shader, radius)
+    Shader.uniform_float('co', color)
+    Shader.uniform_float('Intensity', Intensity)
+    Shader.uniform_float('range', range)
+    b.draw(Shader)
+    RstPoint()
 def draw_circle(center, radius, color, line_color):
-    DiCFS(center, radius, color)
-    DiCLS(center, radius, 32, 2, line_color)
+    DiCFS(center, radius*1.8,color )
+    DiRNGBLR(center, radius*2, 0.1, 0.02, line_color)
