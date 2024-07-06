@@ -8,7 +8,7 @@ if '3.10' in sys.version:
     from .extern.imgui_bundle3_10.imgui_bundle import imgui
 else:
     from .extern.imgui_bundle3_11.imgui_bundle import imgui
-from .utils import set_brush_color_based_on_mode,set_brush_strength_based_on_mode,get_brush_strength_based_on_mode
+from .utils import set_brush_color_based_on_mode,set_brush_strength_based_on_mode,get_brush_strength_based_on_mode,brush_value_based_on_mode
 color_edit_active_component = None
 slider_width=256
 
@@ -200,29 +200,18 @@ def colorpicker(label, color, flags, ops):
     bars_width = square_sz
 
     sv_picker_size = max(bars_width * 1, width - (bars_width + style.item_inner_spacing.x))  # Saturation / Value picking box
-    # print('indent_spacing',style.indent_spacing,style.item_spacing)
     sv_picker_size = max(bars_width * 1, 256)  # Saturation / Value picking box
-    # imgui.internal.item_size()
-    # print('widthwidth', bars_width + style.item_inner_spacing.x)
     bar0_pos_x = picker_pos.x + sv_picker_size + style.item_inner_spacing.x
     # print('bar0_pos_x',bar0_pos_x)
     bar1_pos_x = bar0_pos_x + bars_width + style.item_inner_spacing.x
     bars_triangles_half_sz = imgui.internal.im_trunc(bars_width * 0.20)
 
-    # backup_initial_col = color[:components]
 
     wheel_thickness = sv_picker_size * 0.08
     wheel_r_outer = sv_picker_size * 0.50
     wheel_r_inner = wheel_r_outer - wheel_thickness
     wheel_center = imgui.ImVec2(picker_pos.x + (sv_picker_size + bars_width) * 0.5,
                                 picker_pos.y + sv_picker_size * 0.5)
-    # print('imgui sv_picker_size * 0.5',sv_picker_size * 0.5)
-    # print('imgui sv_picker_size', sv_picker_size)
-    # print('imguisquare_sz', square_sz)
-    # print('imgui wheel_center',wheel_center)
-    # print('imgui picker_pos', picker_pos)
-    # print('imgui bars_width', bars_width)
-    # print('imgui sv_picker_size', sv_picker_size)
     # 该三角形被显示为旋转状态, 其中triangle_pa指向色调(Hue)
     # 方向, 但大部分坐标仍保持未旋转, 用于逻辑计算。
     triangle_r = wheel_r_inner - int(sv_picker_size * 0.027)
@@ -358,34 +347,6 @@ def colorpicker(label, color, flags, ops):
     if alpha_bar:
         pass
     imgui.internal.pop_item_flag()
-    # print('imgui picker_pos3', picker_pos)
-    # if not (flags & imgui.ColorEditFlags_.no_side_preview):
-    #     imgui.same_line(0, style.item_inner_spacing.x)
-    #     imgui.begin_group()
-    #
-    # if not (flags & imgui.ColorEditFlags_.no_label):
-    #     label_display_end = imgui.internal.find_rendered_text_end(label)
-    #     if label != label_display_end:
-    #         if flags & imgui.ColorEditFlags_.no_side_preview:
-    #             imgui.same_line(0, style.item_inner_spacing.x)
-    #         imgui.internal.text_ex(label, label_display_end)
-    #
-    # if not (flags & imgui.ColorEditFlags_.no_side_preview):
-    #     imgui.internal.push_item_flag(imgui.internal.ItemFlags_.no_nav_default_focus, True)
-    #     if flags & imgui.ColorEditFlags_.no_alpha:
-    #         col_v4 = imgui.ImVec4(color[0], color[1], color[2], 1.0)
-    #     else:
-    #         col_v4 = imgui.ImVec4(color[0], color[1], color[2], 1)
-    #     if flags & imgui.ColorEditFlags_.no_label:
-    #         pass
-    #     flag = imgui.ColorEditFlags_
-    #     sub_flags_to_forward = flag.input_mask_ | flag.hdr | flag.alpha_preview | flag.alpha_preview_half | flag.no_tooltip
-    #     imgui.color_button("##current", col_v4, (flags & sub_flags_to_forward),
-    #                        imgui.ImVec2(square_sz * 3, square_sz * 2))
-    #     imgui.internal.pop_item_flag()
-    #     imgui.end_group()
-    # print('imgui picker_pos4', picker_pos)
-    # // Convert back color to RGB
     if value_changed_h or value_changed_sv:
         if flags & imgui.ColorEditFlags_.input_rgb:
 
@@ -400,18 +361,6 @@ def colorpicker(label, color, flags, ops):
             color.s = S
             color.v = V
     value_changed_fix_hue_wrap = False
-    # if (flags & imgui.ColorEditFlags_.no_inputs) == 0:
-    #     imgui.push_item_width((bar1_pos_x if alpha_bar else bar0_pos_x) + bars_width - picker_pos.x)
-    #     im_cf = imgui.ColorEditFlags_
-    #     sub_flags_to_forward = im_cf.data_type_mask_ | im_cf.input_mask_ | im_cf.hdr | im_cf.no_alpha | im_cf.no_options | im_cf.no_tooltip | im_cf.no_small_preview | im_cf.alpha_preview | im_cf.alpha_preview_half
-    #     sub_flags = (flags & sub_flags_to_forward) | im_cf.no_picker
-    #     if (flags & im_cf.display_rgb) or (flags & im_cf.display_mask_) == 0:
-    #         if imgui.color_edit3('##rgb',color,sub_flags|im_cf.display_rgb)[0]:
-    #             value_changed_fix_hue_wrap = (g_Gimgui.active_id != 0 and not g_Gimgui.active_id_allow_overlap)
-    #             value_changed =True
-    #     if (flags & im_cf.display_hsv) or (flags & im_cf.display_mask_) == 0:
-    #         value_changed |= imgui.color_edit3("##hsv", color, sub_flags | im_cf.display_hsv)[0]
-    #     imgui.pop_item_width()
     if value_changed_fix_hue_wrap and (flags & imgui.ColorEditFlags_.input_rgb):
         new_H, new_S, new_V = .0, .0, .0
         new_H, new_S, new_V = imgui.color_convert_rgb_to_hsv(color.h, color.s, color.v, new_H, new_S, new_V)
@@ -425,8 +374,6 @@ def colorpicker(label, color, flags, ops):
                 color[0], color[1], color[2] = imgui.color_convert_hsv_to_rgb(H, S * 0.5 if new_S <= 0 else new_S,
                                                                               color[0], color[1], color[2])
                 color.hsv=(H,S,V)
-        # print('cccccccccccccc',H,color.h)
-    # print('imgui picker_pos5', picker_pos)
     if value_changed:
         if flags & imgui.ColorEditFlags_.input_rgb:
             R = color[0]
@@ -442,7 +389,7 @@ def colorpicker(label, color, flags, ops):
 
     col_black = imgui.color_convert_float4_to_u32(imgui.ImVec4(0.0,0.0,0.0, 1.0))
     col_white = imgui.color_convert_float4_to_u32(imgui.ImVec4(1.0, 1.0, 1.0, 1.0))
-    col_midgrey = imgui.color_convert_float4_to_u32(imgui.ImVec4(0.5, 0.5, 0.5, 1.0))
+    col_midgrey = imgui.color_convert_float4_to_u32(imgui.ImVec4(0.5, 0.5, 0.5, 0.0))
     col_hues = [
         imgui.get_color_u32(imgui.ImVec4(255, 0, 0, 255)),  # 红色
         imgui.get_color_u32(imgui.ImVec4(255, 255, 0, 255)),  # 黄色
@@ -499,12 +446,6 @@ def colorpicker(label, color, flags, ops):
     if flags & imgui.ColorEditFlags_.picker_hue_wheel:
 
 
-        # imgui.pop_id()
-
-        # tra = wheel_center + imgui.internal.im_rotate(triangle_pa, cos_hue_angle, sin_hue_angle)
-        # trb = wheel_center + imgui.internal.im_rotate(triangle_pb, cos_hue_angle, sin_hue_angle)
-        # trc = wheel_center + imgui.internal.im_rotate(triangle_pc, cos_hue_angle, sin_hue_angle)
-
         tra = imgui.ImVec2((wheel_center.x + triangle_pa.x),(wheel_center.y + triangle_pa.y))
         trb = imgui.ImVec2((wheel_center.x + triangle_pb.x),(wheel_center.y + triangle_pb.y))
         trc = imgui.ImVec2((wheel_center.x + triangle_pc.x),(wheel_center.y + triangle_pc.y))
@@ -527,11 +468,6 @@ def colorpicker(label, color, flags, ops):
         draw_list.add_rect_filled_multi_color(l_up, r_bot, 0, 0, col_black, col_black)
         imgui.internal.render_frame_border(l_up, r_bot, 0.0)
         # 彩色bar
-        # for i in range(6):
-        #     draw_list.add_rect_filled_multi_color(imgui.ImVec2(bar0_pos_x, picker_pos.y + i * (sv_picker_size / 6)), imgui.ImVec2(bar0_pos_x + bars_width, picker_pos.y + (i + 1) * (sv_picker_size / 6)), col_hues[i], col_hues[i], col_hues[i + 1], col_hues[i + 1])
-        # bar0_line_y = round(picker_pos.y + H * sv_picker_size)
-        # imgui.internal.render_frame_border(imgui.ImVec2(bar0_pos_x, picker_pos.y), imgui.ImVec2(bar0_pos_x + bars_width, picker_pos.y + sv_picker_size), 0.0)
-
         sv_cursor_pos=imgui.ImVec2(0, 0)
         sv_cursor_pos.x = im_clamp(round((l_up).x + imgui.internal.im_saturate(S) * quad_size), (l_up).x + 2,
                                   picker_pos.x + sv_picker_size - 2)
@@ -558,9 +494,6 @@ def colorpicker(label, color, flags, ops):
 
 def color_bar(color,color_hsv,color_rgb,ops):
     changed=False
-    # color_rgb = list(ops.get_brush_color_based_on_mode())
-    # color_hsv = list(ops.get_brush_color_based_on_mode().hsv)
-    # imgui.push_id('set')
     lines = ['H ', 'S ', 'V ', 'R ', 'G ', 'B ']
     imgui.begin_group()
     global color_bar, values
@@ -747,7 +680,7 @@ def color_bar(color,color_hsv,color_rgb,ops):
 
     # imgui.pop_id()
     if hsv_or_rgb['rgb']:
-        set_brush_color_based_on_mode(color_rgb)
+        set_brush_color_based_on_mode (color_rgb)
     elif hsv_or_rgb['hsv']:
         set_brush_color_based_on_mode([ops.h,ops.s,color_hsv[2]],'hsv')
     if hsv_or_rgb['rgb'] or hsv_or_rgb['hsv']:
@@ -796,9 +729,11 @@ def color_palette(label,color,backup_color,pre_color,colors):
     progress_dir = 1.0
     progress += progress_dir * 0.4 * imgui.get_io().delta_time
     progress_saturated = im_clamp(progress, 0.0, 1.0)
-    size=bpy.context.scene.tool_settings.unified_paint_settings.size
+    # size=bpy.context.scene.tool_settings.unified_paint_settings.size
+    size=brush_value_based_on_mode(get=True,size=True)
     # strength=bpy.context.scene.tool_settings.unified_paint_settings.strength
-    strength = get_brush_strength_based_on_mode()
+    # strength = get_brush_strength_based_on_mode() brush_value_based_on_mode(get=True,strength=True)
+    strength =brush_value_based_on_mode(get=True,strength=True)
     global slider_width
     slider_width_brush=slider_width-55
     # changed,size_f=imgui.slider_float('brush_size',size/500,.0,1,'',0)
@@ -827,7 +762,8 @@ def color_palette(label,color,backup_color,pre_color,colors):
 
     imgui.set_cursor_pos(slider_start_pos)
 
-    flag=imgui.DragDropFlags_.source_no_preview_tooltip
+    flag=imgui.DragDropFlags_.source_no_preview_tooltip.value|imgui.SliderFlags_.no_input.value
+    flag=imgui.SliderFlags_.no_input.value
     imgui.push_style_color(imgui.Col_.frame_bg, imgui.ImVec4(1 / 7.0, 0.6, 1, 0))
     imgui.push_style_color(imgui.Col_.frame_bg_hovered, imgui.ImVec4(1 / 7.0, .7, 1, 0))
     imgui.push_style_color(imgui.Col_.frame_bg_active, imgui.ImVec4(1.0, 1.0, 1.0, 0))
@@ -837,9 +773,10 @@ def color_palette(label,color,backup_color,pre_color,colors):
     imgui.set_next_item_width(slider_width_brush)
     chan,strength=imgui.drag_float('##Strength',strength,0.005,0.0,1.0,'',flags=flag)
     imgui.pop_style_color(3)
-
-    bpy.context.scene.tool_settings.unified_paint_settings.size = int(size)
-    set_brush_strength_based_on_mode(strength)
+    brush_value_based_on_mode(set=True,size=int(size))
+    # bpy.context.scene.tool_settings.unified_paint_settings.size = int(size)
+    # set_brush_strength_based_on_mode(strength)
+    brush_value_based_on_mode(set=True,strength=strength)
     imgui.end_group()
     # except:pass
 
@@ -861,27 +798,14 @@ def color_palette(label,color,backup_color,pre_color,colors):
                 if i!=0:
                     start_pos = imgui.ImVec2(imgui.get_cursor_pos().x+1 , imgui.get_cursor_pos().y+1)
                     imgui.set_cursor_pos(start_pos)
-
-                # else:
-                #     start_pos = imgui.get_cursor_pos() + imgui.ImVec2(1, 1)
-                #     imgui.set_cursor_pos(start_pos)
-
             else:
 
                 imgui.same_line()
             from . import color_palette_dict
             if imgui.color_button(f'palette##{i}', imgui.ImVec4(*colors[i], 1.0), flag, imgui.ImVec2(s_size, s_size)):
-                # print('aaaaaa',imgui.get_id(f'palette##{i}'))
-                # id =imgui.get_id(f'palette##{i}')
-                # color_palette_dict[f"c{id}"]=colors[i]
-                # print('aaaaaa2',color_palette_dict.keys(),color_palette_dict[f"c{id}"])
-
-                # brush_c=get_brush_color_based_on_mode()
                 set_brush_color_based_on_mode(copy.deepcopy(colors[i]))
                 tmp_c=copy.deepcopy(colors[i])
 
-                # brush_c.color=copy.deepcopy(colors[i])
-                # print('brush_c',bpy.context.tool_settings.vertex_paint.brush.color)
         if len(tmp_c):
             colors.insert(0, copy.deepcopy(tmp_c))
     imgui.end_group()

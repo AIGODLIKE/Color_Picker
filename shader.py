@@ -3,7 +3,6 @@ import gpu
 from enum import Enum
 from gpu.types import GPUShader
 from gpu_extras.batch import batch_for_shader
-from gpu_extras.presets import draw_circle_2d
 from gpu.shader import from_builtin
 from gpu.state import point_size_set,line_width_set
 
@@ -52,84 +51,7 @@ void main()
 
   """
 rec_shader_source = (rec_vertex_shader, rec_fragment_shader)
-tri_vertex_shader = """
-uniform mat4 ModelViewProjectionMatrix;
-in vec2 pos;
-uniform vec4 XxYy;
 
-out float S; // 输出到片元着色器的饱和度
-out float L; // 输出到片元着色器的饱和度
-void main()
-{   
-    L =(pos.y - XxYy.w) / (XxYy.z - XxYy.w);
-    if ((pos.y - XxYy.w)<0.000001)
-        {S=0.0;}
-    else{
-        S =(pos.x - XxYy.y) / (L*(XxYy.z-XxYy.w)*1.73205);   
-    }
-    
-    gl_Position = ModelViewProjectionMatrix * vec4(pos, 0.0, 1.0);
-    
-}
-"""
-
-tri_fragment_shader = """
-in float S; // 从顶点着色器接收的饱和度
-in float L; // 从顶点着色器接收的饱和度
-uniform float h;
-out vec4 fragColor;
-vec4 srgb_to_linear(vec4 srgb) {
-                        return mix(
-                            pow((srgb + 0.055) / 1.055, vec4(2.4)),
-                            srgb / 12.92,
-                            step(srgb, vec4(0.04045))
-                        );
-                    }
-vec3 hls2rgb(vec3 hls) {
-    float h = hls.x;
-    float l = hls.y;
-    float s = hls.z;
-    if (s == 0.0) {
-        return vec3(l); // 当饱和度为0时，返回等于亮度的灰色
-    } else {
-        float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
-        float p = 2.0 * l - q;
-        vec3 rgb = vec3(h + 1.0/3.0, h, h - 1.0/3.0);
-
-        for(int i = 0; i < 3; i++) {
-            if (rgb[i] < 0.0) rgb[i] += 1.0;
-            if (rgb[i] > 1.0) rgb[i] -= 1.0;
-
-            if (rgb[i] < 1.0/6.0)
-                rgb[i] = p + (q - p) * 6.0 * rgb[i];
-            else if (rgb[i] < 1.0/2.0)
-                rgb[i] = q;
-            else if (rgb[i] < 2.0/3.0)
-                rgb[i] = p + (q - p) * (2.0/3.0 - rgb[i]) * 6.0;
-            else
-                rgb[i] = p;
-        }
-        return rgb;
-    }
-}
-vec3 hsv2rgb(vec3 c)
-{
-    // 定义一个向量K，用于辅助HSV到RGB的转换
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    // 计算彩色环的三个部分，以生成彩色环的效果
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    // 根据HSV模型，通过混合和限制操作，计算RGB颜色
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-}
-void main()
-{   
-    vec3 rgb=hls2rgb(vec3(h,L,S));
-    //fragColor = vec4(rgb,1.0);
-    fragColor = vec4(pow(vec3(S,0.0,0.0),vec3(2.2)),1.0);
-    //fragColor = srgb_to_linear(vec4(rgb,1.0));
-}
-"""
-tri_shader_source = (tri_vertex_shader, tri_fragment_shader)
 # CIRCLES
 circle_fs = """
   uniform vec4 co;
@@ -197,91 +119,6 @@ ring_blur = """
  }
  """
 ring_blur_shader_source = (rec_vertex_shader, ring_blur)
-
-class ShaderName2D(Enum):
-    IMAGE = 'IMAGE'
-    UNIFORM = 'UNIFORM_COLOR'
-    FLAT = 'FLAT_COLOR'
-    SMOOTH = 'SMOOTH_COLOR'
-
-    def __call__(self):
-        return self.value
-
-
-shader_2d_image = from_builtin(ShaderName2D.IMAGE())
-shader_2d_color_unif = from_builtin(ShaderName2D.UNIFORM())
-shader_2d_color_flat = from_builtin(ShaderName2D.FLAT())
-shader_2d_color_smooth = from_builtin(ShaderName2D.SMOOTH())
-
-
-class Shader2D(Enum):
-    IMAGE = shader_2d_image
-    UNIFORM = shader_2d_color_unif
-    FLAT = shader_2d_color_flat
-    SMOOTH = shader_2d_color_smooth
-
-    def __call__(self):
-        return self.value
-
-
-class ShaderName3D(Enum):
-    UNIFORM = 'UNIFORM_COLOR'
-    FLAT = 'FLAT_COLOR'
-    SMOOTH = 'SMOOTH_COLOR'
-
-    def __call__(self):
-        return self.value
-
-
-shader_3d_color_unif = from_builtin(ShaderName3D.UNIFORM())
-shader_3d_color_flat = from_builtin(ShaderName3D.FLAT())
-shader_3d_color_smooth = from_builtin(ShaderName3D.SMOOTH())
-
-
-class Shader3D(Enum):
-    UNIFORM = shader_3d_color_unif
-    FLAT = shader_3d_color_flat
-    SMOOTH = shader_3d_color_smooth
-
-    def __call__(self):
-        return self.value
-
-
-class BuiltinShaderName(Enum):
-    IMAGE = 'IMAGE'
-    UNIFORM = 'UNIFORM_COLOR'
-    FLAT = 'FLAT_COLOR'
-    SMOOTH = 'SMOOTH_COLOR'
-
-    def __call__(self):
-        return self.value
-
-
-builtin_shader_image = from_builtin(BuiltinShaderName.IMAGE())
-builtin_shader_color_unif = from_builtin(BuiltinShaderName.UNIFORM())
-builtin_shader_color_flat = from_builtin(BuiltinShaderName.FLAT())
-builtin_shader_color_smooth = from_builtin(BuiltinShaderName.SMOOTH())
-
-
-class BuiltinShader(Enum):
-    IMAGE = builtin_shader_image
-    UNIFORM = builtin_shader_color_unif
-    FLAT = builtin_shader_color_flat
-    SMOOTH = builtin_shader_color_smooth
-
-    def __call__(self):
-        return self.value
-
-
-class Shader2D(Enum):
-    IMAGE = shader_2d_image
-    UNIFORM = shader_2d_color_unif
-    FLAT = shader_2d_color_flat
-    SMOOTH = shader_2d_color_smooth
-
-    def __call__(self):
-        return self.value
-
 
 class ShaderType(Enum):
     '''返回对应渲染形状
@@ -357,7 +194,6 @@ def Shader(*shaders) -> GPUShader:
 
 class Shader_cls(Enum):
     Rectangle = Shader(*rec_shader_source)
-    Triangle = Shader(*tri_shader_source)
     Circle=Shader(*circle_shader_source)
     Ring_blur=Shader(*ring_blur_shader_source)
 
@@ -389,22 +225,8 @@ def draw_rec(center, radius, hue, Shader=Shader_cls.Rectangle()):
     batch.draw(Shader)
     RstPoint()
 
-def draw_tri(vertices, hue, colors, shader_tri=Shader_cls.Triangle()):
-    # draw_callback(vertices)
-    # vertices = [-1.0, 1.0,0.0,0.0, -1.0, -1.0,1.0,0.0, 1.0, 0.0,1.0,1.0]
-    # colors = [(1.0, 1.0, 1.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]  # 对应的颜色值
-    print('color1',hue)
-    batch = batch_for_shader(shader_tri, 'TRIS', {"pos": vertices})
-    # batch = batch_for_shader(Shader, 'TRIS', {"pos": vertices, "color": colors})
-    print((vertices[0][0], vertices[1][0], vertices[1][1], vertices[2][1]))
-    print("XxYy.x", vertices[0][0], "XxYy.y", vertices[1][0])
-    print(bpy.context.tool_settings.vertex_paint.brush.color.h)
-    shader_tri.bind()
-    shader_tri.uniform_float("XxYy", (vertices[0][0], vertices[1][0], vertices[1][1], vertices[2][1]))
-    shader_tri.uniform_float("h", hue)
-    batch.draw(shader_tri)
 # 绘制带颜色填充和线条的圆
-def DiCFS(center, radius, color, Shader=Shader_cls.Circle()):
+def draw_circle_filled(center, radius, color, Shader=Shader_cls.Circle()):
     '''绘制具有特定着色效果的圆形。
 使用给定的着色器 s 和几何形状 ShaderGeom.CIR(center)（即一个圆）。'''
     b = batch_for_shader(Shader, ShaderType.POINTS(), ShaderGeom.CIR(center))
@@ -414,7 +236,7 @@ def DiCFS(center, radius, color, Shader=Shader_cls.Circle()):
     b.draw(Shader)
     RstPoint()
 # 绘制线条和圆
-def DiRNGBLR(center, radius, Intensity, range, color, Shader=Shader_cls.Ring_blur()):
+def draw_circle_line(center, radius, Intensity, range, color, Shader=Shader_cls.Ring_blur()):
     '''绘制一个有模糊效果的环形，通过参数_t和_f控制模糊的程度和范围。'''
     b = batch_for_shader(Shader, ShaderType.POINTS(), ShaderGeom.CIR(center))
     Shader.bind()
@@ -425,5 +247,5 @@ def DiRNGBLR(center, radius, Intensity, range, color, Shader=Shader_cls.Ring_blu
     b.draw(Shader)
     RstPoint()
 def draw_circle(center, radius, color, line_color):
-    DiCFS(center, radius*1.8,color )
-    DiRNGBLR(center, radius*2, 0.1, 0.02, line_color)
+    draw_circle_filled(center, radius*1.8,color )
+    draw_circle_line(center, radius*2, 0.1, 0.02, line_color)

@@ -5,15 +5,12 @@ if '3.10' in sys.version:
 else:
     from .extern.imgui_bundle3_11.imgui_bundle import imgui
     from .extern.imgui_bundle3_11.imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
-# from .extern.imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
-# from .extern.imgui_bundle import imgui
 import gpu
 import bpy
 import ctypes
 import platform
 import time
 from gpu_extras.batch import batch_for_shader
-from gpu.types import GPUShader, GPUBatch, GPUVertBuf, GPUIndexBuf
 import numpy as np
 
 
@@ -73,8 +70,6 @@ class Renderer(BaseOpenGLRenderer):
     @staticmethod
     @bpy.app.handlers.persistent
     def refresh_font_texture_ex(scene=None):
-        # save texture state
-        # print('refresh_font_texture_ex')
         self = Renderer.instance
         if not (img := bpy.data.images.get(".imgui_font", None)) \
                 or (platform.platform == "win32" and img.bindcode == 0):
@@ -95,8 +90,6 @@ class Renderer(BaseOpenGLRenderer):
             img.pixels.foreach_set(pixels)
 
             self.io.fonts.clear_tex_data()
-            # print('update font texture')
-            # logger.debug(f"MLT Init -> {time.time() - ts:.2f}s")
         img.gl_load()
         self._font_tex = gpu.texture.from_image(img)
         self._font_texture = img.bindcode
@@ -116,11 +109,6 @@ class Renderer(BaseOpenGLRenderer):
         self.io.fonts.texture_id = 0
         self._font_texture = 0
 
-        # def _invalidate_device_objects(self):
-        #     if self._font_texture > -1:
-        #         gl.glDeleteTextures([self._font_texture])
-        #     self.io.fonts.texture_id = 0
-        #     self._font_texture = 0
 
     def render(self, draw_data):
         io = self.io
@@ -196,17 +184,8 @@ class Renderer(BaseOpenGLRenderer):
 
                 # 更新索引缓冲区偏移
                 idx_buffer_offset += command.elem_count
-        # if last_enable_blend:
-        #     gpu.state.blend_set(last_enable_blend)
-        # else:
         gpu.state.blend_set('ALPHA')
-        # if last_enable_depth_test:
-        #     gpu.state.depth_test_set(last_enable_depth_test)
-        # else:
-        #     gpu.state.depth_test_set('NONE')
         gpu.state.scissor_test_set(False)  # 启用剪裁测试
-    #     # Restore previous GPU state
-    #     # gpu.state.active_set(state)
 
     def _create_projection_matrix(self, width, height):
         ortho_projection = (
