@@ -8,7 +8,7 @@ if '3.10' in sys.version:
     from .extern.imgui_bundle3_10.imgui_bundle import imgui
 else:
     from .extern.imgui_bundle3_11.imgui_bundle import imgui
-from .utils import set_brush_color_based_on_mode,set_brush_strength_based_on_mode,get_brush_strength_based_on_mode,brush_value_based_on_mode
+from .utils import set_brush_color_based_on_mode,brush_value_based_on_mode
 color_edit_active_component = None
 slider_width=256
 

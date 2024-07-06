@@ -222,45 +222,6 @@ def brush_value_based_on_mode(set=False,get=False,size=False,strength=False,):
             if strength:
                 value =  brush.strength
         return value
-def set_brush_strength_based_on_mode(strength=None):
-    # 获取当前的模式
-    mode = bpy.context.object.mode
-
-    # 根据不同的模式获取笔刷颜色
-    if mode == 'VERTEX_PAINT':
-        # 在顶点绘制模式下
-        bpy.context.tool_settings.vertex_paint.brush.strength=strength
-
-    elif mode == 'TEXTURE_PAINT':
-        # 在纹理绘制模式下
-        bpy.context.tool_settings.image_paint.brush.strength=strength
-
-    elif mode == 'PAINT_GPENCIL':
-        # 在 Grease Pencil 绘制模式下
-        # bpy.context.tool_settings.gpencil_paint.brush.strength=strength
-        bpy.data.brushes['Pencil'].gpencil_settings.pen_strength=strength
-    elif mode == 'VERTEX_GPENCIL':
-        # 在 Grease Pencil 绘制模式下
-        # bpy.data.brushes['Vertex Draw'].gpencil_settings.pen_strength = strength
-        if bpy.context.tool_settings.gpencil_paint.brush==bpy.data.brushes['Vertex Draw']:
-            if hasattr(bpy.context.tool_settings.gpencil_paint.brush, 'pen_strength'):
-                bpy.data.brushes['Vertex Draw'].pen_strength = strength
-        elif bpy.context.tool_settings.gpencil_paint.brush==bpy.data.brushes['Vertex Blur']:
-            if hasattr(bpy.context.tool_settings.gpencil_paint.brush, 'pen_strength'):
-                bpy.data.brushes['Vertex Blur'].pen_strength = strength
-        elif bpy.context.tool_settings.gpencil_paint.brush==bpy.data.brushes['Vertex Average']:
-            if hasattr(bpy.context.tool_settings.gpencil_paint.brush, 'pen_strength'):
-                bpy.data.brushes['Vertex Average'].pen_strength = strength
-        elif bpy.context.tool_settings.gpencil_paint.brush==bpy.data.brushes['Vertex Smear']:
-            if hasattr(bpy.context.tool_settings.gpencil_paint.brush, 'pen_strength'):
-                bpy.data.brushes['Vertex Smear'].pen_strength = strength
-        elif bpy.context.tool_settings.gpencil_paint.brush==bpy.data.brushes['Vertex Replace']:
-            if hasattr(bpy.context.tool_settings.gpencil_paint.brush, 'pen_strength'):
-                bpy.data.brushes['Vertex Replace'].pen_strength = strength
-    elif mode == 'SCULPT':
-        bpy.data.brushes['Paint'].strength = strength
-    elif bpy.context.area.spaces.active.ui_mode == 'PAINT':
-        bpy.context.tool_settings.image_paint.brush.strength = strength
 def get_brush_color_based_on_mode():
         # 获取当前的模式
         mode = bpy.context.object.mode
@@ -291,34 +252,6 @@ def get_brush_color_based_on_mode():
         return color
 
 
-def get_brush_strength_based_on_mode():
-    # 获取当前的模式
-    mode = bpy.context.object.mode
-
-    # 根据不同的模式获取笔刷颜色
-    if mode == 'VERTEX_PAINT':
-        # 在顶点绘制模式下
-        brush = bpy.context.tool_settings.vertex_paint.brush
-        strength = brush.strength
-    elif mode == 'TEXTURE_PAINT':
-        # 在纹理绘制模式下
-        brush = bpy.context.tool_settings.image_paint.brush
-        strength = brush.strength
-    elif mode == 'PAINT_GPENCIL':
-        # 在 Grease Pencil 绘制模式下
-        # brush = bpy.data.brushes['Pencil'].gpencil_settings.pen_strength
-        strength = bpy.data.brushes['Pencil'].gpencil_settings.pen_strength
-    elif mode == 'VERTEX_GPENCIL':
-        # 在 Grease Pencil 绘制模式下
-        # brush = bpy.context.tool_settings.gpencil_vertex_paint.brush
-        strength = bpy.data.brushes['Vertex Draw'].gpencil_settings.pen_strength
-    elif mode == 'SCULPT':
-        brush = bpy.data.brushes['Paint']
-        strength = brush.strength
-    elif bpy.context.area.spaces.active.ui_mode == 'PAINT':
-        brush = bpy.context.tool_settings.image_paint.brush
-        strength = brush.strength
-    return strength
 
 def exchange_brush_color_based_on_mode(exchange=None):
     mode = bpy.context.object.mode
