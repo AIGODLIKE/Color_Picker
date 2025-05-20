@@ -1,21 +1,53 @@
-import sys
-if '3.10' in sys.version:
-    from .extern.imgui_bundle3_10.imgui_bundle import imgui
-    from .extern.imgui_bundle3_10.imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
-else:
-    from .extern.imgui_bundle3_11.imgui_bundle import imgui
-    from .extern.imgui_bundle3_11.imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
-import gpu
-import bpy
+try:
+    import imgui
+except ImportError:
+    imgui = None
+
+
+class BaseOpenGLRenderer(object):
+    def __init__(self):
+        if not imgui.get_current_context():
+            raise RuntimeError(
+                "No valid ImGui context. Use imgui.create_context() first and/or "
+                "imgui.set_current_context()."
+            )
+        self.io = imgui.get_io()
+
+        self._font_texture = None
+
+        self.io.delta_time = 1.0 / 60.0
+
+        self._create_device_objects()
+        self.refresh_font_texture()
+
+    def render(self, draw_data):
+        raise NotImplementedError
+
+    def refresh_font_texture(self):
+        raise NotImplementedError
+
+    def _create_device_objects(self):
+        raise NotImplementedError
+
+    def _invalidate_device_objects(self):
+        raise NotImplementedError
+
+    def shutdown(self):
+        self._invalidate_device_objects()
+
+
 import ctypes
 import platform
 import time
-from gpu_extras.batch import batch_for_shader
+
+import bpy
+import gpu
 import numpy as np
+from gpu_extras.batch import batch_for_shader
 
 
 class Renderer(BaseOpenGLRenderer):
-    vertex_source="""
+    vertex_source = """
                 in  vec3 Position;
                 in  vec2 UV;
                 in  vec4 Color;

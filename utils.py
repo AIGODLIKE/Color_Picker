@@ -1,24 +1,34 @@
 import copy
 
-import sys
-if '3.10' in sys.version:
-    from .extern.imgui_bundle3_10.imgui_bundle import imgui
-else:
-    from .extern.imgui_bundle3_11.imgui_bundle import imgui
+from . import __package__ as base_name
+
+try:
+    import imgui
+except ImportError:
+    imgui = None
+
 import bpy
 import os
+
+
 def get_path():
     return os.path.dirname((os.path.realpath(__file__)))
+
 
 def get_name():
     return os.path.basename(get_path())
 
+
 def get_prefs():
-    return bpy.context.preferences.addons[get_name()].preferences
+    return bpy.context.preferences.addons[base_name].preferences
+
+
 def get_imgui_widget_center():
-    h=116
-    return imgui.ImVec2(imgui.get_mouse_pos().x-h,imgui.get_mouse_pos().y-h)
-def set_brush_color_based_on_mode(color=None,hsv=None):
+    h = 116
+    return imgui.ImVec2(imgui.get_mouse_pos().x - h, imgui.get_mouse_pos().y - h)
+
+
+def set_brush_color_based_on_mode(color=None, hsv=None):
     # 获取当前的模式
     mode = bpy.context.object.mode
     if hsv:

@@ -1,13 +1,10 @@
-schema_version = "1.0.4"
+schema_version = "1.0.0"
 
-# Example of manifest file for a Blender extension
-# Change the values according to your extension
 id = "Color_Picker"
 version = "1.0.4"
 name = "Color Picker"
 tagline = "Setting the DPI of an image in Blender"
-maintainer = "Cupcko <649730016@qq.com>"
-# Supported types: "add-on", "theme"
+maintainer = "AIGODLIKE Community, Cupcko <649730016@qq.com>, 小萌新"
 type = "add-on"
 
 # Optional: add-ons can list which resources they will require:
@@ -18,23 +15,24 @@ type = "add-on"
 permissions = ["files", "network"]
 
 # Optional link to documentation, support, source files, etc
- website = "https://github.com/AIGODLIKE/Color_Picker"
+website = "https://github.com/AIGODLIKE/Color_Picker"
 
 # Optional list defined by Blender and server, see:
 # https://docs.blender.org/manual/en/dev/extensions/tags.html
-tags = ["Render"]
+tags = ["Render", "Material"]
 
 blender_version_min = "4.2.0"
 # Optional: maximum supported Blender version
 # blender_version_max = "5.1.0"
 
-# License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
-# https://docs.blender.org/manual/en/dev/extensions/licenses.html
-license = [
-  "SPDX:GPL-2.0-or-later",
-]
+license = ["SPDX:GPL-3.0-or-later", ]
+
 # Optional: required by some licenses.
 copyright = [
-  "2002-2024 Cupcko",
-  "2022 AIGODLIKE Community",
+    "2002-2024 Cupcko",
+    "2022 AIGODLIKE Community",
+]
+
+wheels = [
+    "./wheels/imgui-2.0.0-cp311-cp311-win_amd64.whl",
 ]

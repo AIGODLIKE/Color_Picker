@@ -1,18 +1,21 @@
 import copy
-from .widget import get_wheeL_tri, color_bar, colorpicker, color_palette,picker_switch_button
-from .utils import get_brush_color_based_on_mode,get_prefs
-from mathutils import Vector
-from .pref import Color_Picker_Preferences
 import time
+
 import bpy
-import sys
-if '3.10' in sys.version:
-    from .extern.imgui_bundle3_10.imgui_bundle import imgui
-else:
-    from .extern.imgui_bundle3_11.imgui_bundle import imgui
+
+from .pref import Color_Picker_Preferences
+from .utils import get_brush_color_based_on_mode, get_prefs
+from .widget import get_wheeL_tri, color_bar, colorpicker, color_palette, picker_switch_button
+
+try:
+    import imgui
+except ImportError:
+    imgui = None
+
 from pathlib import Path
 from .render import Renderer as BlenderImguiRenderer
 from .shader import draw_rec, draw_circle
+
 color_hsv = [0, 0, 0]
 color_rgb = [0, 0, 0]
 colors = []
@@ -39,8 +42,6 @@ bl_info = {
 }
 
 
-
-
 class GlobalImgui:
     _instance = None
 
@@ -59,7 +60,7 @@ class GlobalImgui:
 
     @staticmethod
     def init_font():
-        '''字体'''
+        """字体"""
         io = imgui.get_io()
         fonts = io.fonts
         fonts_parent = Path(__file__).parent / "AlibabaPuHuiTi-3-35-Thin.ttf"
@@ -70,20 +71,14 @@ class GlobalImgui:
     def init_imgui(self):
         if self.imgui_context is None:
             self.imgui_context = imgui.create_context()
-            # self.init_font()
             self.imgui_backend = BlenderImguiRenderer()
             self.imgui_backend.refresh_font_texture_ex()
             self.setup_key_map()
-            # print('初始化imgui')
 
     def shutdown_imgui(self):
-        # print('self.draw_handlers.items()',self.draw_handlers.items())
         for SpaceType, draw_handler in self.draw_handlers.items():
             SpaceType.draw_handler_remove(draw_handler, 'WINDOW')
         self.draw_handlers.clear()
-        # imgui.destroy_context(self.imgui_context)
-        # self.imgui_context = None
-
 
     def handler_add(self, callback, SpaceType, show_window_pos, verts, ops):
         """

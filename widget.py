@@ -1,16 +1,17 @@
-import math
 import copy
-import bpy
-import numpy as np
-import sys
+import math
 
-if '3.10' in sys.version:
-    from .extern.imgui_bundle3_10.imgui_bundle import imgui
-else:
-    from .extern.imgui_bundle3_11.imgui_bundle import imgui
-from .utils import set_brush_color_based_on_mode,brush_value_based_on_mode
+import bpy
+
+from .utils import set_brush_color_based_on_mode, brush_value_based_on_mode
+
 color_edit_active_component = None
-slider_width=256
+slider_width = 256
+try:
+    import imgui
+except ImportError:
+    imgui = None
+
 
 def im_clamp(v, mn, mx):
     return max(mn, min(mx, v))
@@ -801,7 +802,6 @@ def color_palette(label,color,backup_color,pre_color,colors):
             else:
 
                 imgui.same_line()
-            from . import color_palette_dict
             if imgui.color_button(f'palette##{i}', imgui.ImVec4(*colors[i], 1.0), flag, imgui.ImVec2(s_size, s_size)):
                 set_brush_color_based_on_mode(copy.deepcopy(colors[i]))
                 tmp_c=copy.deepcopy(colors[i])
