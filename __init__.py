@@ -7,11 +7,6 @@ from .pref import Color_Picker_Preferences
 from .utils import get_brush_color_based_on_mode, get_prefs
 from .widget import get_wheeL_tri, color_bar, colorpicker, color_palette, picker_switch_button
 
-try:
-    import imgui
-except ImportError:
-    imgui = None
-
 from pathlib import Path
 from .render import Renderer as BlenderImguiRenderer
 from .shader import draw_rec, draw_circle
@@ -61,6 +56,7 @@ class GlobalImgui:
     @staticmethod
     def init_font():
         """字体"""
+        import imgui
         io = imgui.get_io()
         fonts = io.fonts
         fonts_parent = Path(__file__).parent / "AlibabaPuHuiTi-3-35-Thin.ttf"
@@ -69,6 +65,7 @@ class GlobalImgui:
                                      glyph_ranges_as_int_list=fonts.get_glyph_ranges_chinese_full())
 
     def init_imgui(self):
+        import imgui
         if self.imgui_context is None:
             self.imgui_context = imgui.create_context()
             self.imgui_backend = BlenderImguiRenderer()
@@ -110,6 +107,7 @@ class GlobalImgui:
             self.shutdown_imgui()
 
     def apply_ui_settings(self):
+        import imgui
         region = bpy.context.region
         imgui.get_io().display_size = region.width, region.height
         # 圆角控件
@@ -123,6 +121,7 @@ class GlobalImgui:
         style.set_color_(2, imgui.ImVec4(0, 0, 0, 0.55))
 
     def draw(self, area, show_window_pos, verts, ops):
+        import imgui
         if ops.area!=bpy.context.area:
             return
         a = time.time()
@@ -162,6 +161,7 @@ class GlobalImgui:
                             (*get_brush_color_based_on_mode(), 1), (1, 1, 1, .95))
 
     def setup_key_map(self):
+        import imgui
         io = imgui.get_io()
         keys = (
             imgui.Key.tab,
@@ -204,6 +204,7 @@ def imgui_handler_remove(handle):
 
 class BaseDrawCall:
     # 定义键盘按键映射，键是字符串表示，值是 ImGui 中定义的键码
+    import imgui
     key_map = {
         'TAB': imgui.Key.tab,
         'LEFT_ARROW': imgui.Key.left_arrow,
@@ -258,6 +259,7 @@ class BaseDrawCall:
         imgui_handler_remove(self.imgui_handle)
 
     def track_any_cover(self):
+        import imgui
         # is_window_hovered 鼠标选中当前窗口的标题栏时触发
         # is_window_focused 当前窗口被聚焦
         # is_item_hovered 当前项(窗口中的)被hover
@@ -267,6 +269,7 @@ class BaseDrawCall:
         self.cover |= imgui.is_any_item_hovered() or imgui.is_window_hovered()
 
     def poll_mouse(self, context: bpy.types.Context, event: bpy.types.Event):
+        import imgui
         io = imgui.get_io()  # 获取 ImGui 的 IO 对象
         # 将 Blender 的鼠标位置转换为 ImGui 的坐标系
         io.add_mouse_pos_event(self.mpos[0], context.region.height - 1 - self.mpos[1])
@@ -283,6 +286,7 @@ class BaseDrawCall:
             io.add_mouse_wheel_event(0, -1)
 
     def poll_events(self, context: bpy.types.Context, event: bpy.types.Event):
+        import imgui
         io = imgui.get_io()  # 获取 ImGui 的 IO 对象
 
         # 根据事件类型更新 ImGui 的键盘状态
@@ -296,6 +300,7 @@ class BaseDrawCall:
 
 def convert_color(h, s, v, alpha=255):
     """ Convert HSV to RGBA format and get ImU32 color value. """
+    import imgui
     r, g, b = 0.0, .0, .0
     r, g, b = imgui.color_convert_hsv_to_rgb(h, s, v, r, g, b)  # Convert HSV to RGB
     return imgui.get_color_u32(imgui.ImVec4((r * 255), int(g * 255), int(b * 255), alpha))
@@ -322,8 +327,8 @@ class Color_Picker_Imgui(bpy.types.Operator, BaseDrawCall):
 
 
     def draw(self, context: bpy.types.Context):
+        import imgui
         a = time.time()
-
         self.cover = False
         # 展示一个 ImGui 测试窗口
         wf = imgui.WindowFlags_
