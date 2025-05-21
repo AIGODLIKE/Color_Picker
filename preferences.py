@@ -10,21 +10,25 @@ class ColorPickerPreferences(bpy.types.AddonPreferences):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        self.draw_keymaps(box)
         layout.prop(self, "picker_switch")
+        try:
+            import imgui
+        except:
+            layout.label(text="imgui未安装,请安装")
+        else:
+            layout.label(text="imgui安装完成")
 
+        # self.draw_keymaps(box)
     def draw_keymaps(self, layout):
         wm = bpy.context.window_manager
         kc = wm.keyconfigs.user
-
-        from .keymap import keys
 
         split = layout.split()
 
         b = split.box()
         b.label(text="Tools")
 
-        if not self.draw_tool_keymaps(kc, keys, b):pass
+        # if not self.draw_tool_keymaps(kc, keys, b):pass
 
     def draw_tool_keymaps(self, kc, keysdict, layout):
         drawn = False
@@ -97,3 +101,11 @@ class ColorPickerPreferences(bpy.types.AddonPreferences):
             drawn.append(isdrawn)
 
         return any(d for d in drawn)
+
+
+def register():
+    bpy.utils.register_class(ColorPickerPreferences)
+
+
+def unregister():
+    bpy.utils.unregister_class(ColorPickerPreferences)

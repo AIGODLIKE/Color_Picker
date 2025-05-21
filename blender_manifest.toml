@@ -17,17 +17,13 @@ permissions = ["files", "network"]
 # Optional link to documentation, support, source files, etc
 website = "https://github.com/AIGODLIKE/Color_Picker"
 
-# Optional list defined by Blender and server, see:
-# https://docs.blender.org/manual/en/dev/extensions/tags.html
+# https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
 tags = ["Render", "Material", "Paint"]
 
 blender_version_min = "4.2.0"
-# Optional: maximum supported Blender version
-# blender_version_max = "5.1.0"
 
 license = ["SPDX:GPL-3.0-or-later", ]
 
-# Optional: required by some licenses.
 copyright = [
     "2002-2024 Cupcko",
     "2022 AIGODLIKE Community",

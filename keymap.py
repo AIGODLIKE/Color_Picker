@@ -1,4 +1,6 @@
-keys={
+import bpy
+
+keys = {
     'COLOR_PICKER': [
         {'label': 'Texture Paint Mode', 'keymap': 'Image Paint', 'space_type': 'VIEW_3D',
          'idname': 'paint.color_picker',
@@ -12,6 +14,8 @@ keys={
         {'label': 'Sculpt Paint Mode', 'keymap': 'Sculpt', 'idname': 'paint.color_picker', 'type': 'SPACE',
          'value': 'PRESS', },
         {'label': '3D Paint Mode', 'keymap': 'Grease Pencil', 'idname': 'paint.color_picker', 'type': 'SPACE',
+         'value': 'PRESS', },
+        {'label': 'Window', 'keymap': 'Window', 'idname': 'paint.color_picker', 'type': 'SPACE',
          'value': 'PRESS', },
     ],
 }

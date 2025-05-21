@@ -1,3 +1,4 @@
+from . import preferences
 bl_info = {
     "name": "Color Picker",
     "author": "AIGODLIKE Community, Cupcko <649730016@qq.com>, 小萌新",
@@ -10,8 +11,8 @@ bl_info = {
 
 
 def register():
-    ...
+    preferences.register()
 
 
 def unregister():
-    ...
+    preferences.unregister()
