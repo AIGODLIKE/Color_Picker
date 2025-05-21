@@ -9,18 +9,18 @@ class ImguiEvent:
     imgui_context = None  # imgui.core._ImGuiContext
     imgui_backend = None
     draw_error = None
+    window_position = None
 
-    def register_imgui(self):
-        import imgui
-        self.create_context()
-        self.io = imgui.get_io()
-        self.handler = bpy.types.SpaceView3D.draw_handler_add(self.draw_imgui, (), 'WINDOW', 'POST_PIXEL')
+    def register_imgui(self, context):
+        self.create_context(context)
+
+        self.handler = bpy.types.SpaceView3D.draw_handler_add(self.draw_imgui, (context,), 'WINDOW', 'POST_PIXEL')
         self.draw_error = False
 
     def unregister_imgui(self):
         bpy.types.SpaceView3D.draw_handler_remove(self.handler, 'WINDOW')
 
-    def create_context(self):
+    def create_context(self, context):
         from .renderer import BlenderImguiRenderer
         import imgui
         if self.imgui_context is None:
@@ -28,22 +28,23 @@ class ImguiEvent:
             self.imgui_backend = BlenderImguiRenderer()
             self.imgui_backend.refresh_font_texture_ex()
 
-    def draw_imgui(self):
+    def draw_imgui(self, context):
         import imgui
         try:
             if self.draw_error:
                 return
-            self.create_context()
-            context = bpy.context
+            self.create_context(context)
             imgui.get_io().display_size = (context.region.width, context.region.height)
 
             imgui.new_frame()
+            self.start_window_pos(context)
             self.start_window(context)
+            print(imgui.get_window_position())
 
             imgui.text("Hello world!")
 
-            # self.draw_color_picker()
-            imgui.show_test_window()
+            self.draw_color_picker()
+            # imgui.show_test_window()
 
             imgui.end()
             imgui.end_frame()
@@ -57,10 +58,6 @@ class ImguiEvent:
     def start_window(self, context):
         import imgui
 
-        x, y = self.mouse
-        x, y = x - 127 - imgui.get_style().indent_spacing * 0.5, context.region.height - y - 129 - 10
-        imgui.set_next_window_position(x, y)
-
         window_flags = (
                 imgui.WINDOW_NO_TITLE_BAR |
                 imgui.WINDOW_NO_RESIZE |
@@ -71,3 +68,11 @@ class ImguiEvent:
 
         start_pos = imgui.Vec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
         imgui.set_cursor_pos(start_pos)
+
+    def start_window_pos(self, context):
+        import imgui
+        if self.window_position == None:
+            x, y = self.mouse
+            x, y = x - 127 - imgui.get_style().indent_spacing * 0.5, context.region.height - y - 129 - 10
+            print("start_window_pos", x, y)
+            imgui.set_next_window_position(x, y)

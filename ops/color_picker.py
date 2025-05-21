@@ -18,17 +18,19 @@ from ..utils import get_pref
 
 class ImguiColorPicker:
     def draw_color_picker(self):
-        ...
-
-        # imgui.text("")
+        import imgui
         start_pos = imgui.Vec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
         imgui.set_cursor_pos(start_pos)
+
+    def old(self):
         im_cf = imgui.ColorEditFlags_
         if get_pref().picker_switch:
             picker_type = im_cf.picker_hue_wheel
+
         else:
             picker_type = im_cf.picker_hue_bar
         misc_flags = picker_type | im_cf.no_options | im_cf.input_rgb | im_cf.no_alpha | im_cf.no_side_preview | im_cf.no_label
+
         color = get_brush_color_based_on_mode()
         if imgui.is_mouse_clicked(0):
             self.pre_color = copy.deepcopy(color)

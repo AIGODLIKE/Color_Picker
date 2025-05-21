@@ -15,12 +15,13 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ImguiColorPicker):
     mouse: Vector = None
 
     def invoke(self, context, event):
-        self.register_imgui()
 
         self.timer = context.window_manager.event_timer_add(1 / 60, window=context.window)
         self.mouse = Vector((event.mouse_region_x, event.mouse_region_y))
 
+        self.register_imgui(context)
         self.sync_key(context, event)
+
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
@@ -37,7 +38,7 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ImguiColorPicker):
             return {"PASS_THROUGH"}
         context.area.tag_redraw()
 
-        if event.type == "ESC":
+        if event.type in ("ESC", "RIGHTMOUSE"):
             self.exit(context)
             return {"FINISHED"}
 

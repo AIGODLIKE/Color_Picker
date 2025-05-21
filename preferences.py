@@ -9,7 +9,8 @@ class ColorPickerPreferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
-        box = layout.box()
+        # box = layout.box()
+        
         layout.prop(self, "picker_switch")
         try:
             import imgui
