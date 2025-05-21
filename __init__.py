@@ -1,15 +1,14 @@
 import copy
 import time
+from pathlib import Path
 
 import bpy
 
 from .pref import Color_Picker_Preferences
-from .utils import get_brush_color_based_on_mode, get_prefs
-from .widget import get_wheeL_tri, color_bar, colorpicker, color_palette, picker_switch_button
-
-from pathlib import Path
 from .render import Renderer as BlenderImguiRenderer
 from .shader import draw_rec, draw_circle
+from .utils import get_brush_color_based_on_mode, get_prefs
+from .widget import get_wheeL_tri, color_bar, colorpicker, color_palette, picker_switch_button
 
 color_hsv = [0, 0, 0]
 color_rgb = [0, 0, 0]
@@ -118,11 +117,11 @@ class GlobalImgui:
         style.frame_border_size = 1
         # style = imgui.get_current_context().style
         # bg color
-        style.set_color_(2, imgui.ImVec4(0, 0, 0, 0.55))
+        style.set_color_(2, imgui.Vec4(0, 0, 0, 0.55))
 
     def draw(self, area, show_window_pos, verts, ops):
         import imgui
-        if ops.area!=bpy.context.area:
+        if ops.area != bpy.context.area:
             return
         a = time.time()
         context = bpy.context
@@ -132,13 +131,13 @@ class GlobalImgui:
 
         # imgui.get_io().font_default = imgui.get_io().fonts.fonts[1]
         # 定义自定义样式颜色
-        title_bg_active_color = imgui.ImVec4(0.546, 0.322, 0.730, 0.9)
-        frame_bg_color = imgui.ImVec4(0.512, 0.494, 0.777, 0.573)
+        title_bg_active_color = imgui.Vec4(0.546, 0.322, 0.730, 0.9)
+        frame_bg_color = imgui.Vec4(0.512, 0.494, 0.777, 0.573)
 
         # 将自定义颜色推送到 ImGui 样式堆栈
         imgui.push_style_color(imgui.Col_.frame_bg_active.value, title_bg_active_color)
         imgui.push_style_color(imgui.Col_.frame_bg.value, frame_bg_color)
-        imgui.get_style().set_color_(5, imgui.ImVec4(0, 0, 0, 0))
+        imgui.get_style().set_color_(5, imgui.Vec4(0, 0, 0, 0))
         imgui.push_style_var(20, 1)
         invalid_callback = []  # 创建一个列表来存储无效的回调函数
 
@@ -164,26 +163,26 @@ class GlobalImgui:
         import imgui
         io = imgui.get_io()
         keys = (
-            imgui.Key.tab,
-            imgui.Key.left_arrow,
-            imgui.Key.right_arrow,
-            imgui.Key.up_arrow,
-            imgui.Key.down_arrow,
-            imgui.Key.home,
-            imgui.Key.end,
-            imgui.Key.insert,
-            imgui.Key.delete,
-            imgui.Key.backspace,
-            imgui.Key.enter,
-            imgui.Key.escape,
-            imgui.Key.page_up,
-            imgui.Key.page_down,
-            imgui.Key.a,
-            imgui.Key.c,
-            imgui.Key.v,
-            imgui.Key.x,
-            imgui.Key.y,
-            imgui.Key.z,
+            imgui.KEY_TAB,
+            imgui.KEY_LEFT_ARROW,
+            imgui.KEY_RIGHT_ARROW,
+            imgui.KEY_UP_ARROW,
+            imgui.KEY_DOWN_ARROW,
+            imgui.KEY_HOME,
+            imgui.KEY_END,
+            imgui.KEY_INSERT,
+            imgui.KEY_DELETE,
+            imgui.KEY_BACKSPACE,
+            imgui.KEY_ENTER,
+            imgui.KEY_ESCAPE,
+            imgui.KEY_PAGE_UP,
+            imgui.KEY_PAGE_DOWN,
+            imgui.KEY_A,
+            imgui.KEY_C,
+            imgui.KEY_V,
+            imgui.KEY_X,
+            imgui.KEY_Y,
+            imgui.KEY_Z,
         )
         for k in keys:
             # We don't directly bind Blender's event type identifiers
@@ -206,34 +205,34 @@ class BaseDrawCall:
     # 定义键盘按键映射，键是字符串表示，值是 ImGui 中定义的键码
     import imgui
     key_map = {
-        'TAB': imgui.Key.tab,
-        'LEFT_ARROW': imgui.Key.left_arrow,
-        'RIGHT_ARROW': imgui.Key.right_arrow,
-        'UP_ARROW': imgui.Key.up_arrow,
-        'DOWN_ARROW': imgui.Key.down_arrow,
-        'HOME': imgui.Key.home,
-        'END': imgui.Key.end,
-        'INSERT': imgui.Key.insert,
-        'DEL': imgui.Key.delete,
-        'BACK_SPACE': imgui.Key.backspace,
-        'SPACE': imgui.Key.space,
-        'RET': imgui.Key.enter,
-        'ESC': imgui.Key.escape,
-        'PAGE_UP': imgui.Key.page_up,
-        'PAGE_DOWN': imgui.Key.page_down,
-        'A': imgui.Key.a,
-        'C': imgui.Key.c,
-        'V': imgui.Key.v,
-        'X': imgui.Key.x,
-        'Y': imgui.Key.y,
-        'Z': imgui.Key.z,
-        'LEFT_CTRL': imgui.Key.im_gui_mod_ctrl,
-        'RIGHT_CTRL': imgui.Key.im_gui_mod_ctrl,
-        'LEFT_ALT': imgui.Key.im_gui_mod_alt,
-        'RIGHT_ALT': imgui.Key.im_gui_mod_alt,
-        'LEFT_SHIFT': imgui.Key.im_gui_mod_shift,
-        'RIGHT_SHIFT': imgui.Key.im_gui_mod_shift,
-        'OSKEY': imgui.Key.comma,
+        'TAB': imgui.KEY_TAB,
+        'LEFT_ARROW': imgui.KEY_LEFT_ARROW,
+        'RIGHT_ARROW': imgui.KEY_RIGHT_ARROW,
+        'UP_ARROW': imgui.KEY_UP_ARROW,
+        'DOWN_ARROW': imgui.KEY_DOWN_ARROW,
+        'HOME': imgui.KEY_HOME,
+        'END': imgui.KEY_END,
+        'INSERT': imgui.KEY_INSERT,
+        'DEL': imgui.KEY_DELETE,
+        'BACK_SPACE': imgui.KEY_BACKSPACE,
+        'SPACE': imgui.KEY_SPACE,
+        'RET': imgui.KEY_ENTER,
+        'ESC': imgui.KEY_ESCAPE,
+        'PAGE_UP': imgui.KEY_PAGE_UP,
+        'PAGE_DOWN': imgui.KEY_PAGE_DOWN,
+        'A': imgui.KEY_A,
+        'C': imgui.KEY_C,
+        'V': imgui.KEY_V,
+        'X': imgui.KEY_X,
+        'Y': imgui.KEY_Y,
+        'Z': imgui.KEY_Z,
+        # 'LEFT_CTRL': imgui.KEY_IM_GUI_MOD_CTRL,
+        # 'RIGHT_CTRL': imgui.KEY_IM_GUI_MOD_CTRL,
+        # 'LEFT_ALT': imgui.KEY_IM_GUI_MOD_ALT,
+        # 'RIGHT_ALT': imgui.KEY_IM_GUI_MOD_ALT,
+        # 'LEFT_SHIFT': imgui.KEY_IM_GUI_MOD_SHIFT,
+        # 'RIGHT_SHIFT': imgui.KEY_IM_GUI_MOD_SHIFT,
+        # 'OSKEY': imgui.KEY_COMMA,
     }
 
     def __init__(self):
@@ -303,7 +302,7 @@ def convert_color(h, s, v, alpha=255):
     import imgui
     r, g, b = 0.0, .0, .0
     r, g, b = imgui.color_convert_hsv_to_rgb(h, s, v, r, g, b)  # Convert HSV to RGB
-    return imgui.get_color_u32(imgui.ImVec4((r * 255), int(g * 255), int(b * 255), alpha))
+    return imgui.get_color_u32(imgui.Vec4((r * 255), int(g * 255), int(b * 255), alpha))
 
 
 class Color_Picker_Imgui(bpy.types.Operator, BaseDrawCall):
@@ -313,14 +312,18 @@ class Color_Picker_Imgui(bpy.types.Operator, BaseDrawCall):
 
     @classmethod
     def poll(cls, context):
-        if bpy.context.mode == 'SCULPT' and bpy.context.tool_settings.sculpt.brush == bpy.data.brushes['Paint']:
-            sculpt = True
-            return sculpt
+        from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
+
+        active_tool = ToolSelectPanelHelper.tool_active_from_context(context)
+
+        print("active", active_tool)
+        if bpy.context.mode == 'SCULPT' and bpy.context.tool_settings.sculpt.brush:
+            return True
         if context.area.type == 'IMAGE_EDITOR':
-            if context.area.spaces.active.ui_mode=='PAINT':
-                image_paint=True
-                return image_paint
-        if (context.mode in {'PAINT_VERTEX', 'PAINT_TEXTURE', 'PAINT_GPENCIL', 'VERTEX_GPENCIL', }) and context.area.type == 'VIEW_3D':
+            if context.area.spaces.active.ui_mode == 'PAINT':
+                return True
+        if (context.mode in {'PAINT_VERTEX', 'PAINT_TEXTURE', 'PAINT_GPENCIL',
+                             'VERTEX_GPENCIL', }) and context.area.type == 'VIEW_3D':
             return True
         return False
 
@@ -336,12 +339,12 @@ class Color_Picker_Imgui(bpy.types.Operator, BaseDrawCall):
         window_flags = wf.no_title_bar | wf.no_resize | wf.no_scrollbar | wf.always_auto_resize
 
         imgui.set_next_window_pos(
-            imgui.ImVec2(self.show_window_pos[0] - 127 - imgui.get_style().indent_spacing * 0.5,
-                         context.region.height - self.show_window_pos[1] - 129 - 10))
+            imgui.Vec2(self.show_window_pos[0] - 127 - imgui.get_style().indent_spacing * 0.5,
+                       context.region.height - self.show_window_pos[1] - 129 - 10))
         imgui.begin("Your first window!", True, window_flags)
 
         # imgui.text("")
-        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y+ 10)
+        start_pos = imgui.Vec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
         imgui.set_cursor_pos(start_pos)
         im_cf = imgui.ColorEditFlags_
         if get_prefs().picker_switch:
@@ -377,7 +380,7 @@ class Color_Picker_Imgui(bpy.types.Operator, BaseDrawCall):
         color_palette('##color_palette', color, self.backup_color, self.pre_color, self.color_palette)
         imgui.end_group()
         picker_switch_button(' ##1')
-        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y -15)
+        start_pos = imgui.Vec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y - 15)
         imgui.set_cursor_pos(start_pos)
         imgui.text('')
         # imgui.show_demo_window()

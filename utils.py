@@ -25,7 +25,7 @@ def get_prefs():
 
 def get_imgui_widget_center():
     h = 116
-    return imgui.ImVec2(imgui.get_mouse_pos().x - h, imgui.get_mouse_pos().y - h)
+    return imgui.Vec2(imgui.get_mouse_pos().x - h, imgui.get_mouse_pos().y - h)
 
 
 def set_brush_color_based_on_mode(color=None, hsv=None):
@@ -71,6 +71,7 @@ def set_brush_color_based_on_mode(color=None, hsv=None):
             bpy.data.brushes['Paint'].color = color
         elif bpy.context.area.spaces.active.ui_mode == 'PAINT':
             bpy.context.tool_settings.image_paint.brush.color = color
+
 def brush_value_based_on_mode(set=False,get=False,size=False,strength=False,):
     mode = bpy.context.object.mode
     if set:
@@ -253,10 +254,16 @@ def get_brush_color_based_on_mode():
             # 在 Grease Pencil 绘制模式下
             brush = bpy.context.tool_settings.gpencil_vertex_paint.brush
             color = brush.color
-        elif mode=='SCULPT':
-            brush = bpy.data.brushes['Paint']
-            color = brush.color
-        elif bpy.context.area.spaces.active.ui_mode=='PAINT':
+        elif mode == 'SCULPT':
+            # from bl_ui.properties_paint_common import UnifiedPaintPanel
+            # paint = UnifiedPaintPanel.paint_settings(bpy.context)
+            # print("paint", paint)
+            # print(dir(paint))
+            # brush = bpy.data.brushes['Paint']
+            # bpy.data.scenes["Scene"].tool_settings.unified_paint_settings.color
+
+            color = bpy.context.tool_settings.unified_paint_settings.color
+        elif bpy.context.area.spaces.active.ui_mode == 'PAINT':
             brush = bpy.context.tool_settings.image_paint.brush
             color = brush.color
         return color
