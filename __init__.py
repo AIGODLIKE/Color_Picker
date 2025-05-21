@@ -1,4 +1,4 @@
-from . import preferences
+from . import preferences, ops, keymap
 bl_info = {
     "name": "Color Picker",
     "author": "AIGODLIKE Community, Cupcko <649730016@qq.com>, 小萌新",
@@ -11,8 +11,12 @@ bl_info = {
 
 
 def register():
+    ops.register()
+    keymap.register()
     preferences.register()
 
 
 def unregister():
+    keymap.unregister()
+    ops.unregister()
     preferences.unregister()
