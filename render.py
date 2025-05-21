@@ -1,4 +1,5 @@
 
+import time
 
 class BaseOpenGLRenderer(object):
     def __init__(self):
@@ -98,31 +99,32 @@ class Renderer(BaseOpenGLRenderer):
     @staticmethod
     @bpy.app.handlers.persistent
     def refresh_font_texture_ex(scene=None):
-        ...
-        # self = Renderer.instance
-        # if not (img := bpy.data.images.get(".imgui_font", None)) \
-        #         or (platform.platform == "win32" and img.bindcode == 0):
-        #     ts = time.time()
-        #     # width, height, pixels,a = self.io.fonts.get_tex_data_as_rgba32()
-        #     # font_matrix: np.ndarray = np.ndarray(self.io.fonts.get_tex_data_as_rgba32())
-        #     # width = font_matrix.shape[1]
-        #     # height = font_matrix.shape[0]
-        #     # pixels = font_matrix.data
-        #     # if not img:
-        #     #     img = bpy.data.images.new(".imgui_font", width, height, alpha=True, float_buffer=True)
-        #     #
-        #     #     # img.colorspace_settings.name = 'Non-Color'
-        #     # pixels = np.frombuffer(pixels, dtype=np.uint8) / np.float32(256)
-        #     # # 进行伽马校正（假设伽马值为 2.2）
-        #     # # gamma = 2.2
-        #     # # pixels = np.power(pixels, 1.0 / gamma)
-        #     # img.pixels.foreach_set(pixels)
-        #     #
-        #     # self.io.fonts.clear_tex_data()
-        # img.gl_load()
-        # self._font_tex = gpu.texture.from_image(img)
-        # self._font_texture = img.bindcode
-        # bpy.data.images.remove(img)
+        self = Renderer.instance
+        if not (img := bpy.data.images.get(".imgui_font", None)) \
+                or (platform.platform == "win32" and img.bindcode == 0):
+            ts = time.time()
+            # width, height, pixels, a = self.io.fonts.get_tex_data_as_rgba32()
+            font_matrix = np.array(self.io.fonts.get_tex_data_as_rgba32())
+            width = int(font_matrix[1])
+            height = int(font_matrix[0])
+            # font_matrix.dtype = "float"
+            print("refresh_font_texture_ex", width, height, len(font_matrix[2]))
+            # pixels = font_matrix.data
+            if not img:
+                img = bpy.data.images.new(".imgui_font", width, height, alpha=True, float_buffer=True)
+
+                # img.colorspace_settings.name = 'Non-Color'
+            # pixels = np.frombuffer(pixels, dtype=np.uint8) / np.float32(256)
+            # # 进行伽马校正（假设伽马值为 2.2）
+            # # gamma = 2.2
+            # # pixels = np.power(pixels, 1.0 / gamma)
+            # img.pixels.foreach_set(pixels)
+
+            self.io.fonts.clear_tex_data()
+        img.gl_load()
+        self._font_tex = gpu.texture.from_image(img)
+        self._font_texture = img.bindcode
+        bpy.data.images.remove(img)
         # self.io.fonts.tex_id = self._font_texture
 
 

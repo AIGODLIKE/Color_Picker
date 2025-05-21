@@ -117,7 +117,8 @@ class GlobalImgui:
         style.frame_border_size = 1
         # style = imgui.get_current_context().style
         # bg color
-        style.set_color_(2, imgui.Vec4(0, 0, 0, 0.55))
+        print("style", dir(style))
+        # style.set_color(2, imgui.Vec4(0, 0, 0, 0.55))
 
     def draw(self, area, show_window_pos, verts, ops):
         import imgui
@@ -148,6 +149,9 @@ class GlobalImgui:
         imgui.pop_style_color()
         imgui.pop_style_color()
         imgui.pop_style_var(1)
+        # imgui.end_frame()  # 结束 ImGui 帧
+        # imgui.render()  # 渲染 ImGui 绘制数据
+
         imgui.end_frame()  # 结束 ImGui 帧
         imgui.render()  # 渲染 ImGui 绘制数据
 
@@ -158,6 +162,7 @@ class GlobalImgui:
                 draw_rec(ops.show_window_pos, 71.5, ops.h)
                 draw_circle((ops.sv_cursor_pos.x, bpy.context.region.height - ops.sv_cursor_pos.y), ops.sv_cursor_rad / 2,
                             (*get_brush_color_based_on_mode(), 1), (1, 1, 1, .95))
+
 
     def setup_key_map(self):
         import imgui
