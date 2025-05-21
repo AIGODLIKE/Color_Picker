@@ -3,7 +3,7 @@ schema_version = "1.0.0"
 id = "Color_Picker"
 version = "1.0.4"
 name = "Color Picker"
-tagline = "Setting the DPI of an image in Blender"
+tagline = "Simple picker color in Blender"
 maintainer = "AIGODLIKE Community, Cupcko <649730016@qq.com>, 小萌新"
 type = "add-on"
 
@@ -19,7 +19,7 @@ website = "https://github.com/AIGODLIKE/Color_Picker"
 
 # Optional list defined by Blender and server, see:
 # https://docs.blender.org/manual/en/dev/extensions/tags.html
-tags = ["Render", "Material"]
+tags = ["Render", "Material", "Paint"]
 
 blender_version_min = "4.2.0"
 # Optional: maximum supported Blender version

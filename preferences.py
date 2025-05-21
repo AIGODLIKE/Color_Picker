@@ -1,13 +1,12 @@
 import bpy
 import rna_keymap_ui
-class Color_Picker_Preferences(bpy.types.AddonPreferences):
+
+
+class ColorPickerPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    picker_switch: bpy.props.BoolProperty(
-        name="picker switch",
-        description="Switch color picker",
-        default=True
-    )
+    picker_switch: bpy.props.BoolProperty(name="picker switch", description="Switch color picker", default=True)
+
     def draw(self, context):
         layout = self.layout
         box = layout.box()
