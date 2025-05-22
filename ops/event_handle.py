@@ -11,11 +11,14 @@ class ImguiEvent:
     draw_error = None
     window_position = None
 
+    show_test = False
+
     def register_imgui(self, context):
         self.create_context(context)
 
         self.handler = bpy.types.SpaceView3D.draw_handler_add(self.draw_imgui, (context,), 'WINDOW', 'POST_PIXEL')
         self.draw_error = False
+        self.window_position = None
 
     def unregister_imgui(self):
         bpy.types.SpaceView3D.draw_handler_remove(self.handler, 'WINDOW')
@@ -39,12 +42,18 @@ class ImguiEvent:
             imgui.new_frame()
             self.start_window_pos(context)
             self.start_window(context)
-            print(imgui.get_window_position())
 
             imgui.text("Hello world!")
 
-            self.draw_color_picker()
-            # imgui.show_test_window()
+            self.draw_color_picker(context)
+            self.window_position = imgui.get_window_position()
+            if imgui.button("Show Test"):
+                print("aaa", self.show_test)
+                self.show_test = not self.show_test
+            if self.show_test:
+                # imgui.show_test_window()
+                from .testwindow import show_test_window
+                show_test_window()
 
             imgui.end()
             imgui.end_frame()
@@ -71,8 +80,7 @@ class ImguiEvent:
 
     def start_window_pos(self, context):
         import imgui
-        if self.window_position == None:
+        if self.window_position is None:
             x, y = self.mouse
-            x, y = x - 127 - imgui.get_style().indent_spacing * 0.5, context.region.height - y - 129 - 10
-            print("start_window_pos", x, y)
+            x, y = x - 50 - imgui.get_style().indent_spacing * 0.5, context.region.height - y - 129 - 10
             imgui.set_next_window_position(x, y)

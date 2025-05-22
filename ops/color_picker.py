@@ -13,27 +13,50 @@ Color_Picker_Imgui_alpha_half_preview = False
 Color_Picker_Imgui_drag_and_drop = True
 Color_Picker_Imgui_options_menu = True
 Color_Picker_Imgui_hdr = False
-from ..utils import get_pref
+import copy
+
+from ..old.widget import colorpicker
+from ..utils import get_pref, get_context_brush_color
 
 
 class ImguiColorPicker:
-    def draw_color_picker(self):
+    def draw_color_picker(self, context):
         import imgui
         start_pos = imgui.Vec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
         imgui.set_cursor_pos(start_pos)
 
-    def old(self):
-        im_cf = imgui.ColorEditFlags_
-        if get_pref().picker_switch:
-            picker_type = im_cf.picker_hue_wheel
-
-        else:
-            picker_type = im_cf.picker_hue_bar
-        misc_flags = picker_type | im_cf.no_options | im_cf.input_rgb | im_cf.no_alpha | im_cf.no_side_preview | im_cf.no_label
-
-        color = get_brush_color_based_on_mode()
+        color = get_context_brush_color(context)
         if imgui.is_mouse_clicked(0):
             self.pre_color = copy.deepcopy(color)
+
+        if get_pref().picker_switch:
+            picker_type = imgui.COLOR_EDIT_PICKER_HUE_WHEEL
+        else:
+            picker_type = imgui.COLOR_EDIT_PICKER_HUE_BAR
+
+        misc_flags = (
+                picker_type |
+                imgui.COLOR_EDIT_NO_OPTIONS |
+                imgui.COLOR_EDIT_INPUT_RGB |
+                imgui.COLOR_EDIT_NO_ALPHA |
+                imgui.COLOR_EDIT_NO_LABEL |
+                imgui.COLOR_EDIT_NO_INPUTS |
+                imgui.COLOR_EDIT_NO_PICKER |
+                imgui.COLOR_EDIT_ALPHA_BAR |
+                imgui.COLOR_EDIT_FLOAT
+        )
+        # if (picker_mode == 1)  flags |= ImGuiColorEditFlags_PickerHueBar;
+        # if (picker_mode == 2)  flags |= ImGuiColorEditFlags_PickerHueWheel;
+        # if (display_mode == 1) flags |= ImGuiColorEditFlags_NoInputs;       // Disable all RGB/HSV/Hex displays
+        # if (display_mode == 2) flags |= ImGuiColorEditFlags_DisplayRGB;     // Override display mode
+        # if (display_mode == 3) flags |= ImGuiColorEditFlags_DisplayHSV;
+        # if (display_mode == 4) flags |= ImGuiColorEditFlags_DisplayHex;
+        imgui.color_edit4("Wheel Color", 0, 0, 0, misc_flags)
+
+    def draw_wheel_picker(self, context):
+        ...
+
+    def old(self):
 
         colorpicker_changed, picker_pos, picker_pos2, wheel_center = colorpicker('##aa', color, misc_flags, self)
         imgui.same_line()

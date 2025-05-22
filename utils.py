@@ -36,7 +36,7 @@ def get_context_brush_color(context: bpy.types.Context):
         # bpy.data.scenes["Scene"].tool_settings.unified_paint_settings.color
 
         color = bpy.context.tool_settings.unified_paint_settings.color
-    elif bpy.context.area.spaces.active.ui_mode == 'PAINT':
-        brush = bpy.context.tool_settings.image_paint.brush
-        color = brush.color
+    # elif bpy.context.area.spaces.active.ui_mode == 'PAINT':
+    #     brush = bpy.context.tool_settings.image_paint.brush
+    #     color = brush.color
     return color

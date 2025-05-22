@@ -144,65 +144,64 @@ def picker_switch_button(label):
 def colorpicker(label, color, flags, ops):
     import imgui
     # 拾取器 上下文
-    g_Gimgui = imgui.get_current_context()
-    window = imgui.internal.get_current_window()
+    gc = imgui.get_current_context()
+    # window = imgui.internal.get_current_window()
     # print('窗口坐标',imgui.get_cursor_pos(),imgui.get_window_pos(),imgui.get_cursor_start_pos())
-    if window.skip_items:
-        return False
-    draw_list = window.draw_list
-    style = g_Gimgui.style
-    io = g_Gimgui.io
+    # if window.skip_items:
+    #     return False
+
+    draw_list = imgui.get_window_draw_list()
+    style = gc.style
+    io = gc.io
     # id=window.get_id(label)
 
     # 检查各种标志
-    width = imgui.calc_item_width()
+    width = imgui.calculate_item_width()
 
-    is_readonly = ((g_Gimgui.next_item_data.item_flags | g_Gimgui.current_item_flags) & imgui.internal.ItemFlags_.read_only) != 0
-    g_Gimgui.next_item_data.clear_flags()
+    # is_readonly = ((gc.next_item_data.item_flags | gc.current_item_flags) & imgui.internal.ItemFlags_.read_only) != 0
+    # gc.next_item_data.clear_flags()
     # 唯一标识符
     imgui.push_id(label)
     imgui.begin_group()
 
-
-    set_current_color_edit_id = (g_Gimgui.color_edit_current_id == 0)
+    set_current_color_edit_id = (gc.color_edit_current_id == 0)
     # 当前窗口的顶部ID将作为当前颜色编辑器的ID
-    if set_current_color_edit_id:
-        g_Gimgui.color_edit_current_id = window.id_stack.__getitem__(window.id_stack.size() - 1)
+    # if set_current_color_edit_id:
+    #     gc.color_edit_current_id = window.id_stack.__getitem__(window.id_stack.size() - 1)
 
+    if not (flags & imgui.COLOR_EDIT_NO_SIDE_PREVIEW):
+        flags |= imgui.COLOR_EDIT_NO_SIDE_PREVIEW
+    # if not (flags & imgui.COLOR_EDIT_NO_OPTIONS):
+    #     imgui.internal.color_picker_options_popup(color, flags)
 
-    if not (flags & imgui.ColorEditFlags_.no_side_preview):
-        flags |= imgui.ColorEditFlags_.no_side_preview
-    if not (flags & imgui.ColorEditFlags_.no_options):
-        imgui.internal.color_picker_options_popup(color, flags)
-
-    if not (flags & imgui.ColorEditFlags_.picker_mask_):
-        if g_Gimgui.color_edit_options & imgui.ColorEditFlags_.picker_mask_:
-            flags |= g_Gimgui.color_edit_options & imgui.ColorEditFlags_.picker_mask_
-        else:
-            flags |= imgui.ColorEditFlags_.default_options_ & imgui.ColorEditFlags_.picker_mask
-    if not (flags & imgui.ColorEditFlags_.input_mask_):
-        if g_Gimgui.color_edit_options & imgui.ColorEditFlags_.input_mask_:
-            flags |= g_Gimgui.color_edit_options & imgui.ColorEditFlags_.input_mask_
-        else:
-            imgui.ColorEditFlags_.default_options_ & imgui.ColorEditFlags_.input_mask_
-    assert imgui.internal.im_is_power_of_two(flags & imgui.ColorEditFlags_.picker_mask_)
-    assert imgui.internal.im_is_power_of_two(flags & imgui.ColorEditFlags_.input_mask_)
-    if not (flags & imgui.ColorEditFlags_.no_options):
-        flags |= g_Gimgui.color_edit_options & imgui.ColorEditFlags_.alpha_bar
+    # if not (flags & imgui.ColorEditFlags_.picker_mask_):
+    #     if gc.color_edit_options & imgui.ColorEditFlags_.picker_mask_:
+    #         flags |= gc.color_edit_options & imgui.ColorEditFlags_.picker_mask_
+    #     else:
+    #         flags |= imgui.ColorEditFlags_.default_options_ & imgui.ColorEditFlags_.picker_mask
+    # if not (flags & imgui.ColorEditFlags_.input_mask_):
+    #     if gc.color_edit_options & imgui.ColorEditFlags_.input_mask_:
+    #         flags |= gc.color_edit_options & imgui.ColorEditFlags_.input_mask_
+    #     else:
+    #         imgui.ColorEditFlags_.default_options_ & imgui.ColorEditFlags_.input_mask_
+    # assert imgui.internal.im_is_power_of_two(flags & imgui.ColorEditFlags_.picker_mask_)
+    # assert imgui.internal.im_is_power_of_two(flags & imgui.ColorEditFlags_.input_mask_)
+    # if not (flags & imgui.ColorEditFlags_.no_options):
+    #     flags |= gc.color_edit_options & imgui.ColorEditFlags_.alpha_bar
 
     # 设置
-    components = 3 if flags & imgui.ColorEditFlags_.no_alpha else 4
-    alpha_bar = (flags & imgui.ColorEditFlags_.alpha_bar) and (not (flags & imgui.ColorEditFlags_.no_alpha))
+    # components = 3 if flags & imgui.ColorEditFlags_.no_alpha else 4
+    # alpha_bar = (flags & imgui.ColorEditFlags_.alpha_bar) and (not (flags & imgui.ColorEditFlags_.no_alpha))
     picker_pos = imgui.Vec2(window.dc.cursor_pos.x, window.dc.cursor_pos.y)
-    picker_pos2=imgui.get_cursor_pos()
+    picker_pos2 = imgui.get_cursor_pos()
     # picker_pos = imgui.get_window_pos()
-
 
     square_sz = imgui.get_frame_height()
 
     bars_width = square_sz
 
-    sv_picker_size = max(bars_width * 1, width - (bars_width + style.item_inner_spacing.x))  # Saturation / Value picking box
+    sv_picker_size = max(bars_width * 1,
+                         width - (bars_width + style.item_inner_spacing.x))  # Saturation / Value picking box
     sv_picker_size = max(bars_width * 1, 256)  # Saturation / Value picking box
     bar0_pos_x = picker_pos.x + sv_picker_size + style.item_inner_spacing.x
     # print('bar0_pos_x',bar0_pos_x)
@@ -260,7 +259,7 @@ def colorpicker(label, color, flags, ops):
 
         # 检查是否需要更新当前激活的控件
         if imgui.is_item_active() and color_edit_active_component is None:
-            initial_off = imgui.Vec2(g_Gimgui.io.mouse_pos_prev.x - wheel_center.x,g_Gimgui.io.mouse_pos_prev.y - wheel_center.y)
+            initial_off = imgui.Vec2(gc.io.mouse_pos_prev.x - wheel_center.x, gc.io.mouse_pos_prev.y - wheel_center.y)
             initial_dist2 = imgui.internal.im_length_sqr(initial_off)
             if imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc, initial_off):
                 color_edit_active_component = 'triangle'
@@ -270,7 +269,7 @@ def colorpicker(label, color, flags, ops):
 
         # 检查当前激活的控件并更新颜色值
         if color_edit_active_component == 'triangle':
-            current_off_unrotated = imgui.Vec2(g_Gimgui.io.mouse_pos.x - wheel_center.x,g_Gimgui.io.mouse_pos.y - wheel_center.y)
+            current_off_unrotated = imgui.Vec2(gc.io.mouse_pos.x - wheel_center.x, gc.io.mouse_pos.y - wheel_center.y)
             if not imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc,
                                                              current_off_unrotated):
                 current_off_unrotated = imgui.internal.im_triangle_closest_point(triangle_pa, triangle_pb, triangle_pc,
@@ -284,7 +283,7 @@ def colorpicker(label, color, flags, ops):
             value_changed = value_changed_sv = True
 
         elif color_edit_active_component == 'wheel':
-            current_off = imgui.Vec2(g_Gimgui.io.mouse_pos.x - wheel_center.x,g_Gimgui.io.mouse_pos.y - wheel_center.y)
+            current_off = imgui.Vec2(gc.io.mouse_pos.x - wheel_center.x, gc.io.mouse_pos.y - wheel_center.y)
             H = math.atan2(current_off.y, current_off.x) / math.pi * 0.5
             if H < .0:
                 H += 1.0
@@ -309,7 +308,7 @@ def colorpicker(label, color, flags, ops):
                                                    sv_picker_size))
         # 检查是否需要更新当前激活的控件
         if imgui.is_item_active() and color_edit_active_component is None:
-            initial_off = imgui.Vec2(g_Gimgui.io.mouse_pos_prev.x - wheel_center.x,g_Gimgui.io.mouse_pos_prev.y - wheel_center.y)
+            initial_off = imgui.Vec2(gc.io.mouse_pos_prev.x - wheel_center.x, gc.io.mouse_pos_prev.y - wheel_center.y)
             initial_dist2 = imgui.internal.im_length_sqr(initial_off)
             quad_l_up = imgui.Vec2(wheel_center.x + offset_l_up.x,wheel_center.y + offset_l_up.y)
             quad_r_bot =imgui.Vec2( wheel_center.x + offset_r_bot.x,wheel_center.y + offset_r_bot.y)
@@ -333,7 +332,7 @@ def colorpicker(label, color, flags, ops):
             value_changed = value_changed_sv = True
 
         elif  color_edit_active_component == 'wheel':
-            current_off = imgui.Vec2(g_Gimgui.io.mouse_pos.x - wheel_center.x,g_Gimgui.io.mouse_pos.y - wheel_center.y)
+            current_off = imgui.Vec2(gc.io.mouse_pos.x - wheel_center.x, gc.io.mouse_pos.y - wheel_center.y)
             H = math.atan2(current_off.y, current_off.x) / math.pi * 0.5
             if H < .0:
                 H += 1.0
@@ -353,11 +352,11 @@ def colorpicker(label, color, flags, ops):
     if value_changed_h or value_changed_sv:
         if flags & imgui.ColorEditFlags_.input_rgb:
 
-            color[0],color[1],color[2]=imgui.color_convert_hsv_to_rgb(H, S, V, color[0],color[1],color[2])
-            g_Gimgui.color_edit_saved_hue = H
-            g_Gimgui.color_edit_saved_sat = S
-            g_Gimgui.color_edit_saved_id = g_Gimgui.color_edit_current_id
-            g_Gimgui.color_edit_saved_color = imgui.color_convert_float4_to_u32(
+            color[0], color[1], color[2] = imgui.color_convert_hsv_to_rgb(H, S, V, color[0], color[1], color[2])
+            gc.color_edit_saved_hue = H
+            gc.color_edit_saved_sat = S
+            gc.color_edit_saved_id = gc.color_edit_current_id
+            gc.color_edit_saved_color = imgui.color_convert_float4_to_u32(
                 imgui.Vec4(color[0], color[1], color[2], 0.0))
         elif flags & imgui.ColorEditFlags_.input_hsv:
             color.h = H
@@ -473,8 +472,9 @@ def colorpicker(label, color, flags, ops):
         # 彩色bar
         sv_cursor_pos=imgui.Vec2(0, 0)
         sv_cursor_pos.x = im_clamp(round((l_up).x + imgui.internal.im_saturate(S) * quad_size), (l_up).x + 2,
-                                  picker_pos.x + sv_picker_size - 2)
-        sv_cursor_pos.y=im_clamp(round((l_up).y + imgui.internal.im_saturate(1 - V) * quad_size), (l_up).y + 2, (l_up).y + quad_size - 2)
+                                   picker_pos.x + sv_picker_size - 2)
+        sv_cursor_pos.y = im_clamp(round((l_up).y + imgui.internal.im_saturate(1 - V) * quad_size), (l_up).y + 2,
+                                   (l_up).y + quad_size - 2)
     sv_cursor_rad = wheel_thickness * 0.55 if value_changed_sv else wheel_thickness * 0.4
     sv_cursor_segments = imgui.get_window_draw_list()._calc_circle_auto_segment_count(sv_cursor_rad)
     # 游标颜色
@@ -482,18 +482,18 @@ def colorpicker(label, color, flags, ops):
                                                    sv_cursor_segments)
     imgui.get_window_draw_list().add_circle(sv_cursor_pos, sv_cursor_rad + 1, col_midgrey, sv_cursor_segments)
     imgui.get_window_draw_list().add_circle(sv_cursor_pos, sv_cursor_rad, col_white, sv_cursor_segments)
-    ops.sv_cursor_pos=sv_cursor_pos
-    ops.sv_cursor_rad=sv_cursor_rad
+    ops.sv_cursor_pos = sv_cursor_pos
+    ops.sv_cursor_rad = sv_cursor_rad
     imgui.end_group()
-    if value_changed and g_Gimgui.last_item_data.id_!=0:
-        imgui.internal.mark_item_edited(g_Gimgui.last_item_data.id_)
+    if value_changed and gc.last_item_data.id_ != 0:
+        imgui.internal.mark_item_edited(gc.last_item_data.id_)
     if set_current_color_edit_id:
-        g_Gimgui.color_edit_current_id = 0
+        gc.color_edit_current_id = 0
     imgui.pop_id()
-    ops.h=H
-    ops.s=S
-    ops.v=V
-    return value_changed,picker_pos,picker_pos2,wheel_center
+    ops.h = H
+    ops.s = S
+    ops.v = V
+    return value_changed, picker_pos, picker_pos2, wheel_center
 
 def color_bar(color,color_hsv,color_rgb,ops):
     import imgui
@@ -723,7 +723,6 @@ def color_palette(label,color,backup_color,pre_color,colors):
     imgui.pop_style_var(3)
 
     # try:
-
 
     imgui.same_line()
     imgui.begin_group()
