@@ -24,15 +24,15 @@ class ImguiEvent:
         bpy.types.SpaceView3D.draw_handler_remove(self.handler, 'WINDOW')
 
     def create_context(self, context):
-        from .renderer import BlenderImguiRenderer
-        import imgui
+        from .render import Renderer
+        from imgui_bundle import imgui
         if self.imgui_context is None:
             self.imgui_context = imgui.create_context()
-            self.imgui_backend = BlenderImguiRenderer()
+            self.imgui_backend = Renderer()
             self.imgui_backend.refresh_font_texture_ex()
 
     def draw_imgui(self, context):
-        import imgui
+        from imgui_bundle import imgui
         try:
             if self.draw_error:
                 return
@@ -65,13 +65,14 @@ class ImguiEvent:
             self.draw_error = True
 
     def start_window(self, context):
-        import imgui
+        from imgui_bundle import imgui
 
+        flags = imgui.WindowFlags_
         window_flags = (
-                imgui.WINDOW_NO_TITLE_BAR |
-                imgui.WINDOW_NO_RESIZE |
-                imgui.WINDOW_NO_SCROLLBAR |
-                imgui.WINDOW_ALWAYS_AUTO_RESIZE
+                flags.no_title_bar |
+                flags.no_resize |
+                flags.no_scrollbar |
+                flags.always_auto_resize
         )
         imgui.begin("Window", False, window_flags)
 
@@ -79,8 +80,10 @@ class ImguiEvent:
         imgui.set_cursor_pos(start_pos)
 
     def start_window_pos(self, context):
-        import imgui
+        from imgui_bundle import imgui
         if self.window_position is None:
             x, y = self.mouse
             x, y = x - 50 - imgui.get_style().indent_spacing * 0.5, context.region.height - y - 129 - 10
-            imgui.set_next_window_position(x, y)
+            pos = imgui.ImVec2((x, y))
+            imgui.set_next_window_pos(pos)
+            # imgui_bundle.imgui.set_next_window_pos()

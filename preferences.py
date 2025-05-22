@@ -13,7 +13,7 @@ class ColorPickerPreferences(bpy.types.AddonPreferences):
         
         layout.prop(self, "picker_switch")
         try:
-            import imgui
+            from imgui_bundle import imgui
         except:
             layout.label(text="imgui未安装,请安装")
         else:

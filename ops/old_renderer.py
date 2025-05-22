@@ -1,16 +1,18 @@
-import gpu
 import ctypes
-import numpy as np
+
 import bgl as gl
+import gpu
+import numpy as np
 from gpu_extras.batch import batch_for_shader
 
 try:
-    import imgui
+    from imgui_bundle import imgui
 except ModuleNotFoundError:
     print("ERROR: imgui was not found")
 
+# from imgui.integrations.base import BaseOpenGLRenderer
+from imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
 
-from imgui.integrations.base import BaseOpenGLRenderer
 
 class Renderer340(BaseOpenGLRenderer):
     """Integration of ImGui into Blender."""

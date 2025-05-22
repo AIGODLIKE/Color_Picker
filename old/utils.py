@@ -3,7 +3,7 @@ import copy
 from . import __package__ as base_name
 
 try:
-    import imgui
+    from imgui_bundle import imgui
 except ImportError:
     imgui = None
 

@@ -1,19 +1,21 @@
-import gpu
 import ctypes
-import numpy as np
+import platform
+import time
+
 import bgl as gl
 import bpy
-import time
-import platform
+import gpu
+import numpy as np
 # from OpenGL import GL as gl
 from gpu_extras.batch import batch_for_shader
+
 try:
-    import imgui
+    from imgui_bundle import imgui
 except ModuleNotFoundError:
     print("ERROR: imgui was not found")
 
-
-from imgui.integrations.base import BaseOpenGLRenderer
+# from imgui.integrations.base import BaseOpenGLRenderer
+from imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
 from .old_renderer import Renderer340
 
 

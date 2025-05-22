@@ -3,7 +3,7 @@ import time
 
 class BaseOpenGLRenderer(object):
     def __init__(self):
-        import imgui
+        from imgui_bundle import imgui
 
         if not imgui.get_current_context():
             raise RuntimeError(
@@ -141,7 +141,7 @@ class Renderer(BaseOpenGLRenderer):
         self._font_texture = 0
 
     def render(self, draw_data):
-        import imgui
+        from imgui_bundle import imgui
 
         io = self.io
         shader = self._bl_shader

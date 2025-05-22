@@ -14,7 +14,7 @@ def im_clamp(v, mn, mx):
 
 
 def color_edit_restore_hs(color, H, S, V):
-    import imgui
+    from imgui_bundle import imgui
     g_Gimgui = imgui.get_current_context()
     assert g_Gimgui.color_edit_current_id != 0, 'ColorEditCurrentID should not be zero'
     if (
@@ -30,7 +30,7 @@ def color_edit_restore_hs(color, H, S, V):
     # print('bbb',H, S, V)
     return H, S, V
 def color_edit_restore_h(color, H):
-    import imgui
+    from imgui_bundle import imgui
     g_Gimgui = imgui.get_current_context()
     assert g_Gimgui.color_edit_current_id != 0
     if g_Gimgui.color_edit_saved_id!=g_Gimgui.color_edit_current_id or g_Gimgui.color_edit_saved_color != imgui.color_convert_float4_to_u32(imgui.Vec4(color[0], color[1], color[2], 0)):
@@ -38,7 +38,7 @@ def color_edit_restore_h(color, H):
     # print('g_Gimgui.color_edit_saved_hue',g_Gimgui.color_edit_saved_hue)
     return g_Gimgui.color_edit_saved_hue if g_Gimgui.color_edit_saved_hue is not None else H
 def get_wheeL_tri(mouse_pos):
-    import imgui
+    from imgui_bundle import imgui
 
     sv_picker_size = 256
     # print('三角sv_picker_size',sv_picker_size)
@@ -90,7 +90,7 @@ def get_wheeL_tri(mouse_pos):
 is_triangle = False
 
 def draw_shape(draw_list, position, size, is_triangle):
-    import imgui
+    from imgui_bundle import imgui
 
     if is_triangle:
         draw_list.add_triangle_filled(
@@ -109,7 +109,7 @@ def draw_shape(draw_list, position, size, is_triangle):
         # print(2222)
 
 def picker_switch_button(label):
-    import imgui
+    from imgui_bundle import imgui
     # global is_triangle
     g_Gimgui = imgui.get_current_context()
     window = imgui.internal.get_current_window()
@@ -142,7 +142,7 @@ def picker_switch_button(label):
     # print(pos)
     draw_shape(draw_list, center, size/2, pref.picker_switch)
 def colorpicker(label, color, flags, ops):
-    import imgui
+    from imgui_bundle import imgui
     # 拾取器 上下文
     gc = imgui.get_current_context()
     # window = imgui.internal.get_current_window()
@@ -496,7 +496,7 @@ def colorpicker(label, color, flags, ops):
     return value_changed, picker_pos, picker_pos2, wheel_center
 
 def color_bar(color,color_hsv,color_rgb,ops):
-    import imgui
+    from imgui_bundle import imgui
     changed=False
     lines = ['H ', 'S ', 'V ', 'R ', 'G ', 'B ']
     imgui.begin_group()
@@ -692,7 +692,7 @@ def color_bar(color,color_hsv,color_rgb,ops):
     # print('bar',hsv_or_rgb['rgb'], hsv_or_rgb['hsv'],changed)
     return changed
 def color_palette(label,color,backup_color,pre_color,colors):
-    import imgui
+    from imgui_bundle import imgui
     g_Gimgui = imgui.get_current_context()
     window = imgui.internal.get_current_window()
     # print('窗口坐标', imgui.get_cursor_pos(), imgui.get_window_pos(), imgui.get_cursor_start_pos())
@@ -817,7 +817,7 @@ def color_palette(label,color,backup_color,pre_color,colors):
 
 def convert_hsv2rgb32_color3(h, s, v, alpha=255):
     import colorsys
-    import imgui
+    from imgui_bundle import imgui
     """ Convert HSV to RGB format and get ImU32 color value. """
     r, g, b = colorsys.hsv_to_rgb(h, s, v)  # Convert HSV to RGB
 

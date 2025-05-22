@@ -4,38 +4,38 @@ import bpy
 class SyncKey:
 
     def sync_key(self, context: bpy.types.Context, event: bpy.types.Event):
-        import imgui
+        from imgui_bundle import imgui
         io = imgui.get_io()
 
         key_map = {
-            'TAB': imgui.KEY_TAB,
-            'LEFT_ARROW': imgui.KEY_LEFT_ARROW,
-            'RIGHT_ARROW': imgui.KEY_RIGHT_ARROW,
-            'UP_ARROW': imgui.KEY_UP_ARROW,
-            'DOWN_ARROW': imgui.KEY_DOWN_ARROW,
-            'HOME': imgui.KEY_HOME,
-            'END': imgui.KEY_END,
-            'INSERT': imgui.KEY_INSERT,
-            'DEL': imgui.KEY_DELETE,
-            'BACK_SPACE': imgui.KEY_BACKSPACE,
-            'SPACE': imgui.KEY_SPACE,
-            'RET': imgui.KEY_ENTER,
-            'ESC': imgui.KEY_ESCAPE,
-            'PAGE_UP': imgui.KEY_PAGE_UP,
-            'PAGE_DOWN': imgui.KEY_PAGE_DOWN,
-            'A': imgui.KEY_A,
-            'C': imgui.KEY_C,
-            'V': imgui.KEY_V,
-            'X': imgui.KEY_X,
-            'Y': imgui.KEY_Y,
-            'Z': imgui.KEY_Z,
-            'LEFT_CTRL': 128 + 1,
-            'RIGHT_CTRL': 128 + 2,
-            'LEFT_ALT': 128 + 3,
-            'RIGHT_ALT': 128 + 4,
-            'LEFT_SHIFT': 128 + 5,
-            'RIGHT_SHIFT': 128 + 6,
-            'OSKEY': 128 + 7,
+            'TAB': imgui.Key.tab,
+            'LEFT_ARROW': imgui.Key.left_arrow,
+            'RIGHT_ARROW': imgui.Key.right_arrow,
+            'UP_ARROW': imgui.Key.up_arrow,
+            'DOWN_ARROW': imgui.Key.down_arrow,
+            'HOME': imgui.Key.home,
+            'END': imgui.Key.end,
+            'INSERT': imgui.Key.insert,
+            'DEL': imgui.Key.delete,
+            'BACK_SPACE': imgui.Key.backspace,
+            'SPACE': imgui.Key.space,
+            'RET': imgui.Key.enter,
+            'ESC': imgui.Key.escape,
+            'PAGE_UP': imgui.Key.page_up,
+            'PAGE_DOWN': imgui.Key.page_down,
+            'A': imgui.Key.a,
+            'C': imgui.Key.c,
+            'V': imgui.Key.v,
+            'X': imgui.Key.x,
+            'Y': imgui.Key.y,
+            'Z': imgui.Key.z,
+            'LEFT_CTRL': imgui.Key.im_gui_mod_ctrl,
+            'RIGHT_CTRL': imgui.Key.im_gui_mod_ctrl,
+            'LEFT_ALT': imgui.Key.im_gui_mod_alt,
+            'RIGHT_ALT': imgui.Key.im_gui_mod_alt,
+            'LEFT_SHIFT': imgui.Key.im_gui_mod_shift,
+            'RIGHT_SHIFT': imgui.Key.im_gui_mod_shift,
+            'OSKEY': imgui.Key.comma,
         }
 
         if event.type in key_map:
@@ -74,31 +74,33 @@ class SyncKey:
             io.add_input_character(char)
 
     def setup_key_map(self):
-        import imgui
+        from imgui_bundle import imgui
         io = imgui.get_io()
         keys = (
-            imgui.KEY_TAB,
-            imgui.KEY_LEFT_ARROW,
-            imgui.KEY_RIGHT_ARROW,
-            imgui.KEY_UP_ARROW,
-            imgui.KEY_DOWN_ARROW,
-            imgui.KEY_HOME,
-            imgui.KEY_END,
-            imgui.KEY_INSERT,
-            imgui.KEY_DELETE,
-            imgui.KEY_BACKSPACE,
-            imgui.KEY_ENTER,
-            imgui.KEY_ESCAPE,
-            imgui.KEY_PAGE_UP,
-            imgui.KEY_PAGE_DOWN,
-            imgui.KEY_A,
-            imgui.KEY_C,
-            imgui.KEY_V,
-            imgui.KEY_X,
-            imgui.KEY_Y,
-            imgui.KEY_Z,
+            imgui.Key.tab,
+            imgui.Key.left_arrow,
+            imgui.Key.right_arrow,
+            imgui.Key.up_arrow,
+            imgui.Key.down_arrow,
+            imgui.Key.home,
+            imgui.Key.end,
+            imgui.Key.insert,
+            imgui.Key.delete,
+            imgui.Key.backspace,
+            imgui.Key.enter,
+            imgui.Key.escape,
+            imgui.Key.page_up,
+            imgui.Key.page_down,
+            imgui.Key.a,
+            imgui.Key.c,
+            imgui.Key.v,
+            imgui.Key.x,
+            imgui.Key.y,
+            imgui.Key.z,
         )
         for k in keys:
             # We don't directly bind Blender's event type identifiers
             # because imgui requires the key_map to contain integers only
             io.key_map[k] = k
+
+

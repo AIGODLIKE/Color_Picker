@@ -21,7 +21,7 @@ from ..utils import get_pref, get_context_brush_color
 
 class ImguiColorPicker:
     def draw_color_picker(self, context):
-        import imgui
+        from imgui_bundle import imgui
         start_pos = imgui.Vec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
         imgui.set_cursor_pos(start_pos)
 

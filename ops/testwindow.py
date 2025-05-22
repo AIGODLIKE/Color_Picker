@@ -3,7 +3,7 @@
 
 from array import array
 import colorsys
-import imgui
+from imgui_bundle import imgui
 import itertools
 import math
 import os
