@@ -88,7 +88,7 @@ class GlobalImgui:
         # style = imgui.get_current_context().style
         # bg color
         print("style", dir(style))
-        # style.set_color(2, imgui.Vec4(0, 0, 0, 0.55))
+        # style.set_color(2, imgui.ImVec4(0, 0, 0, 0.55))
 
     def draw(self, area, show_window_pos, verts, ops):
         from imgui_bundle import imgui
@@ -102,13 +102,13 @@ class GlobalImgui:
 
         # imgui.get_io().font_default = imgui.get_io().fonts.fonts[1]
         # 定义自定义样式颜色
-        title_bg_active_color = imgui.Vec4(0.546, 0.322, 0.730, 0.9)
-        frame_bg_color = imgui.Vec4(0.512, 0.494, 0.777, 0.573)
+        title_bg_active_color = imgui.ImVec4(0.546, 0.322, 0.730, 0.9)
+        frame_bg_color = imgui.ImVec4(0.512, 0.494, 0.777, 0.573)
 
         # 将自定义颜色推送到 ImGui 样式堆栈
         imgui.push_style_color(imgui.Col_.frame_bg_active.value, title_bg_active_color)
         imgui.push_style_color(imgui.Col_.frame_bg.value, frame_bg_color)
-        imgui.get_style().set_color_(5, imgui.Vec4(0, 0, 0, 0))
+        imgui.get_style().set_color_(5, imgui.ImVec4(0, 0, 0, 0))
         imgui.push_style_var(20, 1)
         invalid_callback = []  # 创建一个列表来存储无效的回调函数
 
@@ -278,7 +278,7 @@ def convert_color(h, s, v, alpha=255):
     from imgui_bundle import imgui
     r, g, b = 0.0, .0, .0
     r, g, b = imgui.color_convert_hsv_to_rgb(h, s, v, r, g, b)  # Convert HSV to RGB
-    return imgui.get_color_u32(imgui.Vec4((r * 255), int(g * 255), int(b * 255), alpha))
+    return imgui.get_color_u32(imgui.ImVec4((r * 255), int(g * 255), int(b * 255), alpha))
 
 
 class Color_Picker_Imgui(bpy.types.Operator, BaseDrawCall):

@@ -46,20 +46,18 @@ class ImguiEvent:
             imgui.text("Hello world!")
 
             self.draw_color_picker(context)
-            self.window_position = imgui.get_window_position()
+            self.window_position = imgui.get_window_pos()
             if imgui.button("Show Test"):
                 print("aaa", self.show_test)
                 self.show_test = not self.show_test
             if self.show_test:
-                # imgui.show_test_window()
-                from .testwindow import show_test_window
-                show_test_window()
+                imgui.show_demo_window()
 
             imgui.end()
             imgui.end_frame()
             imgui.render()
             self.imgui_backend.render(imgui.get_draw_data())
-        except Exception as e:
+        except Exception:
             import traceback
             traceback.print_exc()
             self.draw_error = True
@@ -70,13 +68,14 @@ class ImguiEvent:
         flags = imgui.WindowFlags_
         window_flags = (
                 flags.no_title_bar |
-                flags.no_resize |
+                # flags.no_resize |
                 flags.no_scrollbar |
                 flags.always_auto_resize
+            # flags.no_scroll_with_mouse
         )
-        imgui.begin("Window", False, window_flags)
+        imgui.begin("Main Window", False, window_flags)
 
-        start_pos = imgui.Vec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
+        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
         imgui.set_cursor_pos(start_pos)
 
     def start_window_pos(self, context):

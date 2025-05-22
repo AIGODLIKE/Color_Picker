@@ -16,45 +16,65 @@ Color_Picker_Imgui_hdr = False
 import copy
 
 from ..old.widget import colorpicker
-from ..utils import get_pref, get_context_brush_color
+from ..utils import get_context_brush_color
 
 
 class ImguiColorPicker:
     def draw_color_picker(self, context):
         from imgui_bundle import imgui
-        start_pos = imgui.Vec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
-        imgui.set_cursor_pos(start_pos)
-
+        # start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
+        # imgui.set_cursor_pos(start_pos)
         color = get_context_brush_color(context)
-        if imgui.is_mouse_clicked(0):
-            self.pre_color = copy.deepcopy(color)
 
-        if get_pref().picker_switch:
-            picker_type = imgui.COLOR_EDIT_PICKER_HUE_WHEEL
-        else:
-            picker_type = imgui.COLOR_EDIT_PICKER_HUE_BAR
+        imgui.begin_horizontal("Color")
+        self.draw_left()
+        self.draw_right()
+        imgui.end_horizontal()
+
+    def draw_left(self):
+        from imgui_bundle import imgui
+        imgui.begin_vertical("Left")
+
+        flags = imgui.ColorEditFlags_
+        misc_flags = (
+                flags.no_options |
+                flags.input_rgb |
+                flags.no_alpha |
+                flags.no_label |
+                flags.no_inputs |
+                flags.no_picker |
+                flags.no_border |
+                flags.no_side_preview |
+                flags.no_small_preview |
+                flags.alpha_bar |
+                flags.float
+        )
+
+        imgui.color_picker4("Hue Bar", [0, 0, 0, 0], misc_flags | flags.picker_hue_bar)
+        imgui.color_picker4("Hue Wheel", [0, 0, 0, 0], misc_flags | flags.picker_hue_wheel)
+
+        imgui.end_vertical()
+
+    def draw_right(self):
+        from imgui_bundle import imgui
+        imgui.begin_vertical("Right")
+
+        flags = imgui.ColorEditFlags_
 
         misc_flags = (
-                picker_type |
-                imgui.COLOR_EDIT_NO_OPTIONS |
-                imgui.COLOR_EDIT_INPUT_RGB |
-                imgui.COLOR_EDIT_NO_ALPHA |
-                imgui.COLOR_EDIT_NO_LABEL |
-                imgui.COLOR_EDIT_NO_INPUTS |
-                imgui.COLOR_EDIT_NO_PICKER |
-                imgui.COLOR_EDIT_ALPHA_BAR |
-                imgui.COLOR_EDIT_FLOAT
+                flags.no_options |
+                # flags.input_rgb |
+                flags.alpha_bar |
+                # flags.no_label |
+                # flags.no_inputs |
+                # flags.no_picker |
+                # flags.no_side_preview |
+                flags.alpha_bar |
+                flags.float
         )
-        # if (picker_mode == 1)  flags |= ImGuiColorEditFlags_PickerHueBar;
-        # if (picker_mode == 2)  flags |= ImGuiColorEditFlags_PickerHueWheel;
-        # if (display_mode == 1) flags |= ImGuiColorEditFlags_NoInputs;       // Disable all RGB/HSV/Hex displays
-        # if (display_mode == 2) flags |= ImGuiColorEditFlags_DisplayRGB;     // Override display mode
-        # if (display_mode == 3) flags |= ImGuiColorEditFlags_DisplayHSV;
-        # if (display_mode == 4) flags |= ImGuiColorEditFlags_DisplayHex;
-        imgui.color_edit4("Wheel Color", 0, 0, 0, misc_flags)
+        imgui.color_picker4("HSV", [0, 0, 0, 0], misc_flags | flags.none)
 
-    def draw_wheel_picker(self, context):
-        ...
+        imgui.end_vertical()
 
     def old(self):
 
@@ -82,7 +102,7 @@ class ImguiColorPicker:
         color_palette('##color_palette', color, self.backup_color, self.pre_color, self.color_palette)
         imgui.end_group()
         picker_switch_button(' ##1')
-        start_pos = imgui.Vec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y - 15)
+        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y - 15)
         imgui.set_cursor_pos(start_pos)
         imgui.text('')
         # imgui.show_demo_window()

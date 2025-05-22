@@ -25,7 +25,7 @@ def get_prefs():
 
 def get_imgui_widget_center():
     h = 116
-    return imgui.Vec2(imgui.get_mouse_pos().x - h, imgui.get_mouse_pos().y - h)
+    return imgui.ImVec2(imgui.get_mouse_pos().x - h, imgui.get_mouse_pos().y - h)
 
 
 def set_brush_color_based_on_mode(color=None, hsv=None):

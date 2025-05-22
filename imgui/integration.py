@@ -475,7 +475,7 @@ class MLTOps(bpy.types.Operator, BaseDrawCall):
             curpx = curpx + rect_min.x
             curpy = curpy + cursor_screen_pos.y
             # curpy = min(max(curpy, rect_min.y + h), rect_min.y)
-            curp = imgui.Vec2(curpx, curpy)
+            curp = imgui.ImVec2(curpx, curpy)
             start_pos, end_pos = find_word(data.buffer, data.cursor_pos)
             word = data.buffer[start_pos: end_pos]
             self.t(curp, word)
