@@ -15,6 +15,7 @@ Color_Picker_Imgui_options_menu = True
 Color_Picker_Imgui_hdr = False
 import copy
 
+from .wheel_circle import wheel_circle
 from ..old.widget import colorpicker
 from ..utils import get_pref, get_context_brush_color
 
@@ -52,6 +53,7 @@ class ImguiColorPicker:
         # if (display_mode == 3) flags |= ImGuiColorEditFlags_DisplayHSV;
         # if (display_mode == 4) flags |= ImGuiColorEditFlags_DisplayHex;
         imgui.color_edit4("Wheel Color", 0, 0, 0, misc_flags)
+        wheel_circle()
 
     def draw_wheel_picker(self, context):
         ...
