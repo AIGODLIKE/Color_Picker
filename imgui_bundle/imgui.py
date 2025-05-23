@@ -201,7 +201,7 @@ class BaseDrawCall:
         'X': imgui.KEY_X,
         'Y': imgui.KEY_Y,
         'Z': imgui.KEY_Z,
-        # 'LEFT_CTRL': imgui.KEY_IM_GUI_MOD_CTRL,
+        'LEFT_CTRL': imgui.Key,
         # 'RIGHT_CTRL': imgui.KEY_IM_GUI_MOD_CTRL,
         # 'LEFT_ALT': imgui.KEY_IM_GUI_MOD_ALT,
         # 'RIGHT_ALT': imgui.KEY_IM_GUI_MOD_ALT,

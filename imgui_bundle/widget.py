@@ -141,11 +141,12 @@ def picker_switch_button(label):
 
     # print(pos)
     draw_shape(draw_list, center, size/2, pref.picker_switch)
+
 def colorpicker(label, color, flags, ops):
     from imgui_bundle import imgui
     # 拾取器 上下文
     gc = imgui.get_current_context()
-    # window = imgui.internal.get_current_window()
+    window = imgui.internal.get_current_window()
     # print('窗口坐标',imgui.get_cursor_pos(),imgui.get_window_pos(),imgui.get_cursor_start_pos())
     # if window.skip_items:
     #     return False
@@ -156,7 +157,7 @@ def colorpicker(label, color, flags, ops):
     # id=window.get_id(label)
 
     # 检查各种标志
-    width = imgui.calculate_item_width()
+    width = imgui.calc_item_width()
 
     # is_readonly = ((gc.next_item_data.item_flags | gc.current_item_flags) & imgui.internal.ItemFlags_.read_only) != 0
     # gc.next_item_data.clear_flags()
@@ -169,8 +170,9 @@ def colorpicker(label, color, flags, ops):
     # if set_current_color_edit_id:
     #     gc.color_edit_current_id = window.id_stack.__getitem__(window.id_stack.size() - 1)
 
-    if not (flags & imgui.COLOR_EDIT_NO_SIDE_PREVIEW):
-        flags |= imgui.COLOR_EDIT_NO_SIDE_PREVIEW
+    # flags = imgui.ColorEditFlags_
+    # if not (flags & imgui.ColorEditFlags_):
+    #     flags |= imgui.COLOR_EDIT_NO_SIDE_PREVIEW
     # if not (flags & imgui.COLOR_EDIT_NO_OPTIONS):
     #     imgui.internal.color_picker_options_popup(color, flags)
 
@@ -191,7 +193,7 @@ def colorpicker(label, color, flags, ops):
 
     # 设置
     # components = 3 if flags & imgui.ColorEditFlags_.no_alpha else 4
-    # alpha_bar = (flags & imgui.ColorEditFlags_.alpha_bar) and (not (flags & imgui.ColorEditFlags_.no_alpha))
+    alpha_bar = (flags & imgui.ColorEditFlags_.alpha_bar) and (not (flags & imgui.ColorEditFlags_.no_alpha))
     picker_pos = imgui.ImVec2(window.dc.cursor_pos.x, window.dc.cursor_pos.y)
     picker_pos2 = imgui.get_cursor_pos()
     # picker_pos = imgui.get_window_pos()
@@ -247,7 +249,7 @@ def colorpicker(label, color, flags, ops):
     value_changed_h = False
     value_changed_sv = False
     # 设置当前UI元素不响应键盘导航，以免影响色相选择
-    imgui.internal.push_item_flag(imgui.internal.ItemFlags_.no_nav, True)
+    imgui.push_item_flag(imgui.ItemFlags_.no_nav, True)
     global color_edit_active_component
     # 如果设置了色相环选择标志，则执行色相环和SV三角形的逻辑
     if flags & imgui.ColorEditFlags_.picker_hue_wheel:
@@ -348,7 +350,7 @@ def colorpicker(label, color, flags, ops):
 
     if alpha_bar:
         pass
-    imgui.internal.pop_item_flag()
+    imgui.pop_item_flag()
     if value_changed_h or value_changed_sv:
         if flags & imgui.ColorEditFlags_.input_rgb:
 
@@ -691,6 +693,7 @@ def color_bar(color,color_hsv,color_rgb,ops):
         changed = True
     # print('bar',hsv_or_rgb['rgb'], hsv_or_rgb['hsv'],changed)
     return changed
+
 def color_palette(label,color,backup_color,pre_color,colors):
     from imgui_bundle import imgui
     g_Gimgui = imgui.get_current_context()
@@ -813,7 +816,6 @@ def color_palette(label,color,backup_color,pre_color,colors):
             colors.insert(0, copy.deepcopy(tmp_c))
     imgui.end_group()
     imgui.pop_style_var(3)
-
 
 def convert_hsv2rgb32_color3(h, s, v, alpha=255):
     import colorsys
