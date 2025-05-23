@@ -118,23 +118,23 @@ def picker_switch_button(label):
     #     return False
     draw_list = window.draw_list
     # print(2222, imgui.get_cursor_pos())
-    pos=imgui.ImVec2(window.dc.cursor_pos.x+2, window.dc.cursor_pos.y-8)
-    imgui.set_cursor_pos(imgui.ImVec2(imgui.get_cursor_pos().x+2,imgui.get_cursor_pos().y-8))
+    pos = imgui.ImVec2(window.dc.cursor_pos.x + 2, window.dc.cursor_pos.y - 8)
+    imgui.set_cursor_pos(imgui.ImVec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y - 8))
     size = 20
     # print(1111,imgui.get_cursor_pos())
-    center = imgui.ImVec2(pos.x +size/2,pos.y +size/2)
+    center = imgui.ImVec2(pos.x + size / 2, pos.y + size / 2)
     imgui.push_style_color(21, imgui.ImVec4(0, 0, 0, 0.1))
     imgui.push_style_color(22, imgui.ImVec4(0, 0, 0, 0.1))
     imgui.push_style_color(23, imgui.ImVec4(0, 0, 0, 0.1))
-    from .utils import get_prefs
-    # print(hasattr(bpy.context.preferences, 'addons'))
-    if hasattr(bpy.context.preferences, 'addons'):
-        pref=get_prefs()
+    from ..utils import get_pref
+
+    pref = get_pref()
     # is_triangle=pref.picker_switch
     # 绘制按钮
-    if imgui.button(label,imgui.ImVec2(size,size)):
-        pref.picker_switch=not pref.picker_switch
+    if imgui.button(label, imgui.ImVec2(size, size)):
+        pref.picker_switch = not pref.picker_switch
         # is_triangle = not is_triangle
+
     imgui.pop_style_color(3)
     # 绘制图形
 
@@ -753,9 +753,6 @@ def color_palette(label,color,backup_color,pre_color,colors):
     imgui.set_cursor_pos(slider_start_pos2)
     imgui.progress_bar(strength, imgui.ImVec2(slider_width_brush, 20.0), f'S:{strength:.3f}')
     imgui.pop_style_color(2)
-    # sizef=bpy.context.scene.tool_settings.unified_paint_settings.size
-    # for f in imgui.get_io().fonts.fonts:
-    # print(len(imgui.get_io().fonts.fonts))
 
     if 480>=size>=190:
         v_max_r=500

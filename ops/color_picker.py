@@ -15,7 +15,7 @@ Color_Picker_Imgui_options_menu = True
 Color_Picker_Imgui_hdr = False
 import copy
 
-from ..imgui_bundle.widget import colorpicker, color_bar
+from ..imgui_bundle.widget import colorpicker, color_bar, picker_switch_button
 from ..utils import get_context_brush_color
 
 
@@ -27,59 +27,34 @@ class ImguiColorPicker:
         color = get_context_brush_color(context)
 
         imgui.begin_horizontal("Color")
-        flags = imgui.ColorEditFlags_
-        colorpicker("test", color, flags.picker_hue_wheel, self)
-        color_bar(color, color, color, self)
-        # self.draw_left()
-        # self.draw_right()
+        self.draw_left(context)
+        self.draw_right(context)
         imgui.end_horizontal()
 
-    def draw_left(self):
+    def draw_left(self, context):
         from imgui_bundle import imgui
         imgui.begin_vertical("Left")
 
-        flags = imgui.ColorEditFlags_
-        misc_flags = (
-                flags.no_options |
-                flags.input_rgb |
-                flags.no_alpha |
-                flags.no_label |
-                flags.no_inputs |
-                flags.no_picker |
-                flags.no_border |
-                flags.no_side_preview |
-                flags.no_small_preview |
-                flags.alpha_bar |
-                flags.float
-        )
+        color = get_context_brush_color(context)
 
-        imgui.color_picker4("Hue Bar", [0, 0, 0, 0], misc_flags | flags.picker_hue_bar)
-        imgui.color_picker4("Hue Wheel", [0, 0, 0, 0], misc_flags | flags.picker_hue_wheel)
+        flags = imgui.ColorEditFlags_
+        colorpicker("test", color, flags.picker_hue_wheel, self)
 
         imgui.end_vertical()
 
-    def draw_right(self):
+    def draw_right(self, context):
         from imgui_bundle import imgui
         imgui.begin_vertical("Right")
 
-        flags = imgui.ColorEditFlags_
+        color = get_context_brush_color(context)
 
-        misc_flags = (
-                flags.no_options |
-                # flags.input_rgb |
-                flags.alpha_bar |
-                # flags.no_label |
-                # flags.no_inputs |
-                # flags.no_picker |
-                # flags.no_side_preview |
-                flags.alpha_bar |
-                flags.float
-        )
-        imgui.color_picker4("HSV", [0, 0, 0, 0], misc_flags | flags.none)
+        color_bar(color, color, color, self)
+        color_palette("aaa", color, color, color, colo)
 
+        picker_switch_button("emmm")
         imgui.end_vertical()
 
-    def old(self):
+    def old(self, context):
 
         colorpicker_changed, picker_pos, picker_pos2, wheel_center = colorpicker('##aa', color, misc_flags, self)
         imgui.same_line()
