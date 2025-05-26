@@ -16,12 +16,14 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
     timer = None
     mouse: Vector = None
     start_color = None
+    start_hsv = None
 
     def init_color(self, context):
         self.start_color = self.get_color(context)
         if self.start_color is None:
             self.report({'ERROR'}, "Not Fond Color!!!")
             return {"CANCELLED"}
+        self.start_hsv = self.start_color.hsv
         return None
 
     def invoke(self, context, event):

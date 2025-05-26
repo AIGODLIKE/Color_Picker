@@ -14,7 +14,6 @@ class ImguiEvent:
     show_test = False
 
     def register_imgui(self, context):
-        from imgui_bundle import imgui
 
         self.create_context(context)
 
@@ -50,7 +49,7 @@ class ImguiEvent:
             self.draw_color_picker(context)
             self.window_position = imgui.get_window_pos()
             if imgui.button("Show Test"):
-                print("aaa", self.show_test)
+                # print("aaa", self.show_test)
                 self.show_test = not self.show_test
             if self.show_test:
                 imgui.show_demo_window()
@@ -59,10 +58,11 @@ class ImguiEvent:
             imgui.end_frame()
             imgui.render()
             self.imgui_backend.render(imgui.get_draw_data())
-        except Exception:
+        except Exception as e:
             import traceback
             traceback.print_exc()
             self.draw_error = True
+            self.report({'ERROR'}, str(e.args))
 
     def start_window(self, context):
         from imgui_bundle import imgui

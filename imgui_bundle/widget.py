@@ -87,41 +87,15 @@ def get_wheeL_tri(mouse_pos):
     ]
     # return (wheel_center.x,wheel_center.y),tra, trb, trc
     return list
-is_triangle = False
-
-def draw_shape(draw_list, position, size, is_triangle):
-    from imgui_bundle import imgui
-
-    if is_triangle:
-        draw_list.add_triangle_filled(
-            imgui.ImVec2(position[0] + size, position[1]+size),
-            imgui.ImVec2(position[0]-size, position[1] + size),
-            imgui.ImVec2(position[0] , position[1] -size),
-            imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
-        )
-        # print(11111)
-    else:
-        draw_list.add_rect_filled(
-            imgui.ImVec2(position[0]-size, position[1]-size),
-            imgui.ImVec2(position[0] + size, position[1] + size),
-            imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
-        )
-        # print(2222)
 
 def picker_switch_button(label):
     from imgui_bundle import imgui
-    # global is_triangle
-    g_Gimgui = imgui.get_current_context()
+
     window = imgui.internal.get_current_window()
-    # print('窗口坐标',imgui.get_cursor_pos(),imgui.get_window_pos(),imgui.get_cursor_start_pos())
-    # if window.skip_items:
-    #     return False
     draw_list = window.draw_list
-    # print(2222, imgui.get_cursor_pos())
     pos = imgui.ImVec2(window.dc.cursor_pos.x + 2, window.dc.cursor_pos.y - 8)
     imgui.set_cursor_pos(imgui.ImVec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y - 8))
     size = 20
-    # print(1111,imgui.get_cursor_pos())
     center = imgui.ImVec2(pos.x + size / 2, pos.y + size / 2)
     imgui.push_style_color(21, imgui.ImVec4(0, 0, 0, 0.1))
     imgui.push_style_color(22, imgui.ImVec4(0, 0, 0, 0.1))
@@ -129,18 +103,28 @@ def picker_switch_button(label):
     from ..utils import get_pref
 
     pref = get_pref()
-    # is_triangle=pref.picker_switch
     # 绘制按钮
     if imgui.button(label, imgui.ImVec2(size, size)):
         pref.picker_switch = not pref.picker_switch
-        # is_triangle = not is_triangle
 
     imgui.pop_style_color(3)
-    # 绘制图形
 
-
-    # print(pos)
-    draw_shape(draw_list, center, size/2, pref.picker_switch)
+    from imgui_bundle import imgui
+    size /= 2
+    position = center
+    if pref.picker_switch:
+        draw_list.add_triangle_filled(
+            imgui.ImVec2(position[0] + size, position[1] + size),
+            imgui.ImVec2(position[0] - size, position[1] + size),
+            imgui.ImVec2(position[0], position[1] - size),
+            imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
+        )
+    else:
+        draw_list.add_rect_filled(
+            imgui.ImVec2(position[0] - size, position[1] - size),
+            imgui.ImVec2(position[0] + size, position[1] + size),
+            imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
+        )
 
 def colorpicker(label, color, flags, ops):
     from imgui_bundle import imgui
@@ -497,202 +481,6 @@ def colorpicker(label, color, flags, ops):
     ops.v = V
     return value_changed, picker_pos, picker_pos2, wheel_center
 
-def color_bar(color,color_hsv,color_rgb,ops):
-    from imgui_bundle import imgui
-    changed=False
-    lines = ['H ', 'S ', 'V ', 'R ', 'G ', 'B ']
-    imgui.begin_group()
-    global color_bar, values
-    hsv_or_rgb = {'hsv': False, 'rgb': False}
-    slider_flag = imgui.SliderFlags_.no_input
-    for i in range(6):
-        # print('bar',color.h)
-        # imgui.push_id(f'color_bar{lines[i]}')
-        global slider_width
-        imgui.set_next_item_width(slider_width)
-        imgui.push_style_color(imgui.Col_.frame_bg, imgui.ImVec4(1 / 7.0, 0.6, 1, 0))
-        imgui.push_style_color(imgui.Col_.frame_bg_hovered, imgui.ImVec4(1 / 7.0, .7, 1, 0))
-        imgui.push_style_color(imgui.Col_.frame_bg_active, imgui.ImVec4(1.0, 1.0, 1.0, 0))
-        imgui.push_style_color(imgui.Col_.slider_grab, imgui.ImVec4(0.9, 0.9, 0.9, 0.0))
-        imgui.push_style_color(imgui.Col_.slider_grab_active, imgui.ImVec4(0.9, 0.9, 0.9, 0.0))
-        # imgui.push_style_color(imgui.Col_.border,imgui.ImVec4(1/7.0, 1, 1,0))
-        gradient_size = [imgui.calc_item_width(), 19]
-
-        p0 = imgui.get_cursor_screen_pos()
-
-        p1 = (p0.x + gradient_size[0], p0.y + gradient_size[1])
-        if i == 0:
-            col_hues = [
-                imgui.get_color_u32(imgui.ImVec4(1, 0, 0, 1)),  # 红色
-                imgui.get_color_u32(imgui.ImVec4(1, 1, 0, 1)),  # 黄色
-                imgui.get_color_u32(imgui.ImVec4(0, 1, 0, 1)),  # 绿色
-                imgui.get_color_u32(imgui.ImVec4(0, 1, 1, 1)),  # 青色
-                imgui.get_color_u32(imgui.ImVec4(0, 0, 1, 1)),  # 蓝色
-                imgui.get_color_u32(imgui.ImVec4(1, 0, 1, 1)),  # 品红
-                imgui.get_color_u32(imgui.ImVec4(1, 0, 0, 1))  # 红色(再次出现以闭合色环)
-            ]
-            for c in range(6):
-                segment = gradient_size[0] / 6
-                # 偏移两端
-                if c == 0:
-                    start = p0[0] + 2
-                elif c == 5:
-                    start = p0[0] - 2
-                else:
-                    start = p0[0]
-                imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(start + c * segment, p0[1]),
-                                                                         imgui.ImVec2(start + (c + 1) * segment, p1[1]),
-                                                                         col_hues[c], col_hues[c + 1], col_hues[c + 1],
-                                                                         col_hues[c])
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * ops.h, p0[1] - 3),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * ops.h, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
-                4
-            )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * ops.h, p0[1] - 2),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * ops.h, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
-                2
-            )
-            changed, ops.h = imgui.slider_float(lines[i], ops.h, 0.0, 1.0, "", slider_flag)
-            hsv_or_rgb['hsv'] |= changed
-        elif i == 1:
-            imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
-                                                                     imgui.ImVec2(p1[0] - 2, p1[1]),
-                                                                     convert_hsv2rgb32_color3(0, 0, ops.v),
-                                                                     convert_hsv2rgb32_color3(ops.h, 1.0, ops.v),
-                                                                     convert_hsv2rgb32_color3(ops.h, 1.0, ops.v),
-                                                                     convert_hsv2rgb32_color3(0, 0, ops.v)
-                                                                     )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * ops.s, p0[1] - 3),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * ops.s, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
-                4
-            )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * ops.s, p0[1] - 2),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * ops.s, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
-                2
-            )
-            changed, ops.s = imgui.slider_float(lines[i], ops.s, 0.0, 1.0, "", slider_flag)
-            hsv_or_rgb['hsv'] |= changed
-        elif i == 2:  # v
-            imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
-                                                                     imgui.ImVec2(p1[0] - 2, p1[1]),
-                                                                     convert_hsv2rgb32_color3(0, 0, 0),
-                                                                     convert_hsv2rgb32_color3(color.h, color.s, 1),
-                                                                     convert_hsv2rgb32_color3(color.h, color.s, 1),
-                                                                     convert_hsv2rgb32_color3(0, 0, 0)
-                                                                     )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.v, p0[1] - 3),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.v, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
-                4
-            )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.v, p0[1] - 2),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.v, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
-                2
-            )
-            changed, color_hsv[2] = imgui.slider_float(lines[i], color.v, 0.0, 1.0, "", slider_flag)
-            hsv_or_rgb['hsv'] |= changed
-        elif i == 3:  # r
-            imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
-                                                                     imgui.ImVec2(p1[0] - 2, p1[1]),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(0, color.g, color.b, 1.0)),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(1, color.g, color.b, 1.0)),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(1, color.g, color.b, 1.0)),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(0, color.g, color.b, 1.0)),
-                                                                     )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.r, p0[1] - 3),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.r, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
-                4
-            )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.r, p0[1] - 2),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.r, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
-                2
-            )
-            changed, color_rgb[0] = imgui.slider_float(lines[i], color.r, 0.0, 1.0, "", slider_flag)
-            hsv_or_rgb['rgb'] |= changed
-        elif i == 4:  # g
-            imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
-                                                                     imgui.ImVec2(p1[0] - 2, p1[1]),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(color.r, 0, color.b, 1.0)),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(color.r, 1, color.b, 1.0)),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(color.r, 1, color.b, 1.0)),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(color.r, 0, color.b, 1.0)),
-                                                                     )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.g, p0[1] - 3),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.g, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
-                4
-            )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.g, p0[1] - 2),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.g, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
-                2
-            )
-            changed, color_rgb[1] = imgui.slider_float(lines[i], color.g, 0.0, 1.0, "", slider_flag)
-            hsv_or_rgb['rgb'] |= changed
-        else:
-            imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
-                                                                     imgui.ImVec2(p1[0] - 2, p1[1]),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(color.r, color.g, 0, 1.0)),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(color.r, color.g, 1, 1.0)),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(color.r, color.g, 1, 1.0)),
-                                                                     imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(color.r, color.g, 0, 1.0)),
-                                                                     )
-            imgui.get_window_draw_list().add_line(imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.b, p0[1] - 3),
-                                                  imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.b, p1[1] + 1),
-                                                  imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
-                                                  4
-                                                  )
-            imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.b, p0[1] - 2),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * color.b, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
-                2
-            )
-            changed, color_rgb[2] = imgui.slider_float(lines[i], color.b, 0.0, 1.0, "", slider_flag, )
-            hsv_or_rgb['rgb'] |= changed
-
-        imgui.pop_style_color(5)
-        # imgui.pop_id()
-    imgui.end_group()
-
-    # imgui.pop_id()
-    if hsv_or_rgb['rgb']:
-        set_brush_color_based_on_mode (color_rgb)
-    elif hsv_or_rgb['hsv']:
-        set_brush_color_based_on_mode([ops.h,ops.s,color_hsv[2]],'hsv')
-    if hsv_or_rgb['rgb'] or hsv_or_rgb['hsv']:
-        changed = True
-    return changed
-
 def color_palette(label,color,backup_color,pre_color,colors):
     from imgui_bundle import imgui
     g_Gimgui = imgui.get_current_context()
@@ -813,10 +601,3 @@ def color_palette(label,color,backup_color,pre_color,colors):
     imgui.end_group()
     imgui.pop_style_var(3)
 
-def convert_hsv2rgb32_color3(h, s, v, alpha=255):
-    import colorsys
-    from imgui_bundle import imgui
-    """ Convert HSV to RGB format and get ImU32 color value. """
-    r, g, b = colorsys.hsv_to_rgb(h, s, v)  # Convert HSV to RGB
-
-    return imgui.color_convert_float4_to_u32(imgui.ImVec4(r, g, b, 1.0))
