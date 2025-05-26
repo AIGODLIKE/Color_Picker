@@ -15,8 +15,18 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
 
     timer = None
     mouse: Vector = None
+    start_color = None
+
+    def init_color(self, context):
+        self.start_color = self.get_color(context)
+        if self.start_color is None:
+            self.report({'ERROR'}, "Not Fond Color!!!")
+            return {"CANCELLED"}
+        return None
 
     def invoke(self, context, event):
+        if init := self.init_color(context):
+            return init
 
         self.timer = context.window_manager.event_timer_add(1 / 60, window=context.window)
         self.mouse = Vector((event.mouse_region_x, event.mouse_region_y))
@@ -28,22 +38,17 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
         return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
-        self.sync_key(context, event)
         if not context.area:
             self.exit(context)
             return {"CANCELLED"}
-        x, y = self.mouse = Vector((event.mouse_region_x, event.mouse_region_y))
-        w, h = context.region.width, context.region.height
-
-        if 0 > x or x > w or 0 > y or y > h:
-            # 鼠标不在 region 范围则不更新
+        elif self.check_region(context, event):
             return {"PASS_THROUGH"}
-        context.area.tag_redraw()
 
         if event.type in ("ESC", "RIGHTMOUSE"):
             self.exit(context)
             return {"FINISHED"}
-
+        self.sync_key(context, event)
+        context.area.tag_redraw()
         return {"RUNNING_MODAL"}
 
     def execute(self, context):
@@ -51,6 +56,18 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
 
     def exit(self, context):
         self.unregister_imgui()
+        context.area.tag_redraw()
+
+    def check_region(self, context, event):
+        """
+        鼠标不在 region 范围则不更新
+        """
+
+        x, y = self.mouse = Vector((event.mouse_region_x, event.mouse_region_y))
+        w, h = context.region.width, context.region.height
+
+        if 0 > x or x > w or 0 > y or y > h:
+            return True
 
 
 def register():

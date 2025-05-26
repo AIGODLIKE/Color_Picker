@@ -14,6 +14,8 @@ class ImguiEvent:
     show_test = False
 
     def register_imgui(self, context):
+        from imgui_bundle import imgui
+
         self.create_context(context)
 
         self.handler = bpy.types.SpaceView3D.draw_handler_add(self.draw_imgui, (context,), 'WINDOW', 'POST_PIXEL')
@@ -73,7 +75,9 @@ class ImguiEvent:
                 flags.always_auto_resize
             # flags.no_scroll_with_mouse
         )
-        imgui.begin("Main Window", False, window_flags)
+        window_name = "Main Window"
+        imgui.begin(window_name, False, window_flags)
+        # imgui.set_window_focus(window_name)
 
         start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
         imgui.set_cursor_pos(start_pos)
@@ -85,4 +89,3 @@ class ImguiEvent:
             x, y = x - 50 - imgui.get_style().indent_spacing * 0.5, context.region.height - y - 129 - 10
             pos = imgui.ImVec2((x, y))
             imgui.set_next_window_pos(pos)
-            # imgui_bundle.imgui.set_next_window_pos()

@@ -6,4 +6,5 @@ data = {
     '3D Paint Mode': '3D视图模式(顶点/绘制/Gpencil)',
     'color picker': '颜色选择器',
     'Color Picker': '颜色选择器',
+    "Not Fond Color!!!": "未找到颜色!!!"
 }

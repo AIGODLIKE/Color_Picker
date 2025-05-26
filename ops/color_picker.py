@@ -15,7 +15,7 @@ Color_Picker_Imgui_options_menu = True
 Color_Picker_Imgui_hdr = False
 import copy
 
-from ..imgui_bundle.widget import colorpicker, color_bar, picker_switch_button
+from ..imgui_bundle.widget import colorpicker, color_bar, picker_switch_button, color_palette
 from ..utils import get_context_brush_color
 
 
@@ -27,8 +27,9 @@ class ImguiColorPicker:
         color = get_context_brush_color(context)
 
         imgui.begin_horizontal("Color")
-        self.draw_left(context)
-        self.draw_right(context)
+        self.draw_color_picker_wheel()
+        # self.draw_left(context)
+        # self.draw_right(context)
         imgui.end_horizontal()
 
     def draw_left(self, context):
@@ -49,7 +50,7 @@ class ImguiColorPicker:
         color = get_context_brush_color(context)
 
         color_bar(color, color, color, self)
-        color_palette("aaa", color, color, color, colo)
+        # color_palette("aaa", color, color, color, color)
 
         picker_switch_button("emmm")
         imgui.end_vertical()

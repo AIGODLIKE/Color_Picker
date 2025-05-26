@@ -691,7 +691,6 @@ def color_bar(color,color_hsv,color_rgb,ops):
         set_brush_color_based_on_mode([ops.h,ops.s,color_hsv[2]],'hsv')
     if hsv_or_rgb['rgb'] or hsv_or_rgb['hsv']:
         changed = True
-    # print('bar',hsv_or_rgb['rgb'], hsv_or_rgb['hsv'],changed)
     return changed
 
 def color_palette(label,color,backup_color,pre_color,colors):

@@ -7,7 +7,36 @@ class SyncKey:
         from imgui_bundle import imgui
         io = imgui.get_io()
 
-        et = event.type
+        event_type = event.type
+        is_press = event.value == 'PRESS'
+
+        # 鼠标 mouse
+        x, y = (self.mouse[0], context.region.height - 1 - self.mouse[1])
+        io.add_mouse_pos_event(x, y)
+
+        if event_type == 'LEFTMOUSE':
+            io.add_mouse_button_event(0, is_press)
+        elif event_type == 'RIGHTMOUSE':
+            io.add_mouse_button_event(1, is_press)
+        elif event_type == 'MIDDLEMOUSE':
+            io.add_mouse_button_event(2, is_press)
+        if event_type == 'WHEELUPMOUSE':
+            io.add_mouse_wheel_event(0, 1)
+        elif event_type == 'WHEELDOWNMOUSE':
+            io.add_mouse_wheel_event(0, -1)
+
+        # 处理 Unicode 输入
+        if event.unicode and 0 < (char := ord(event.unicode)) < 0x10000:
+            io.add_input_character(char)
+        self.sync_keyboard(event)
+
+    @staticmethod
+    def sync_keyboard(event):
+        from imgui_bundle import imgui
+
+        io = imgui.get_io()
+
+        event_type = event.type
         is_press = event.value == 'PRESS'
 
         key_map = {
@@ -42,26 +71,7 @@ class SyncKey:
         }
 
         # 根据事件类型更新 ImGui 的键盘状态
-        if et in key_map:
-            io.add_key_event(key_map[et], is_press)
-
-        # 处理 Unicode 输入
-        if event.unicode and 0 < (char := ord(event.unicode)) < 0x10000:
-            io.add_input_character(char)
-
-        # 鼠标 mouse
-        x, y = (self.mouse[0], context.region.height - 1 - self.mouse[1])
-        io.add_mouse_pos_event(x, y)
-
-        # print("sync_key", event.type, event.value)
-
-        if et == 'LEFTMOUSE':
-            io.add_mouse_button_event(0, is_press)
-        elif et == 'RIGHTMOUSE':
-            io.add_mouse_button_event(1, is_press)
-        elif et == 'MIDDLEMOUSE':
-            io.add_mouse_button_event(2, is_press)
-        if et == 'WHEELUPMOUSE':
-            io.add_mouse_wheel_event(0, 1)
-        elif et == 'WHEELDOWNMOUSE':
-            io.add_mouse_wheel_event(0, -1)
+        if event_type in key_map:
+            k = key_map[event_type]
+            io.add_key_event(k, is_press)
+            # io.add_input_character(k)
