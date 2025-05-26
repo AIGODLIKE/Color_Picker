@@ -1,55 +1,25 @@
+import bpy
 from mathutils import Color
 
-
-def get_color_prop(context):
-    """bpy.data.scenes["Scene"].tool_settings.unified_paint_settings.color
-    # bpy.data.scenes["Scene"].tool_settings.unified_paint_settings.color
-    """
-    mode = context.object.mode
-    tool_settings = context.tool_settings
-
-    if unified_paint_settings := getattr(tool_settings, "unified_paint_settings"):
-        return unified_paint_settings, "color"
-
-    if mode == 'VERTEX_PAINT':
-        # 在顶点绘制模式下
-        brush = tool_settings.vertex_paint.brush
-        return brush, "color"
-    elif mode == 'TEXTURE_PAINT':
-        # 在纹理绘制模式下
-        brush = tool_settings.image_paint.brush
-        return brush, "color"
-    elif mode == 'PAINT_GPENCIL':
-        # 在 Grease Pencil 绘制模式下
-        brush = tool_settings.gpencil_paint.brush
-        return brush, "color"
-    elif mode == 'VERTEX_GPENCIL':
-        # 在 Grease Pencil 绘制模式下
-        brush = tool_settings.gpencil_vertex_paint.brush
-        return brush, "color"
-    elif mode == 'SCULPT':
-        unified_paint_settings = tool_settings.unified_paint_settings
-        return unified_paint_settings, "color"
-    return None, None
+from ..utils import get_tool_prop
 
 
 class ColorSync:
 
     @staticmethod
     def get_color(context: "bpy.types.Context") -> "Color|None":
-        prop, name = get_color_prop(context)
-        if prop and name:
-            if color := getattr(prop, name):
-                print("get_color", prop, name, color)
+        prop = get_tool_prop(context)
+        if prop:
+            if color := getattr(prop, "color"):
                 return color
         return Color()
 
     def set_color(self, context, color, sync_to_hsv=False):
-        prop, name = get_color_prop(context)
-        if getattr(prop, name):
-            print("set_color", prop, name, color)
-            setattr(prop, name, color)
+        prop = get_tool_prop(context)
+        if getattr(prop, "color"):
+            setattr(prop, "color", color)
             self.start_color = color
+            self.add_palettes_color(color)
             if sync_to_hsv:
                 self.start_hsv = color.hsv
 
@@ -64,11 +34,8 @@ class ColorSync:
         print("set_hsv", h, s, v, end=None)
         self.set_color(context, Color(color))
 
-    @staticmethod
-    def add_palettes_color(color):
+    def add_palettes_color(self, color):
         """向色盘添加一个颜色"""
-        name = "Picker Color"
-        palettes = bpy.data.palettes
 
         cl = len(color)
         alpha = 1
@@ -79,7 +46,41 @@ class ColorSync:
         else:
             Exception("Color Error")
 
-        if palette := palettes.get(name, palettes.new(name)):
+        if palette := self.get_palette():
             nc = palette.colors.new()
             nc.color = Color((r, g, b))
-            nc.value = alpha
+            nc.strength = alpha
+
+    @staticmethod
+    def get_palette():
+        name = "Picker Color"
+        palettes = bpy.data.palettes
+        if palette := palettes.get(name):
+            return palette
+        return palettes.new(name)
+
+    @staticmethod
+    def get_size(context):
+        prop = get_tool_prop(context)
+        if size := getattr(prop, "size"):
+            return size
+        return -1
+
+    @staticmethod
+    def set_size(context, size):
+        prop = get_tool_prop(context)
+        if getattr(prop, "size"):
+            setattr(prop, "size", size)
+
+    @staticmethod
+    def get_strength(context):
+        prop = get_tool_prop(context)
+        if strength := getattr(prop, "strength"):
+            return strength
+        return -1
+
+    @staticmethod
+    def set_strength(context, strength):
+        prop = get_tool_prop(context)
+        if getattr(prop, "strength"):
+            setattr(prop, "strength", strength)
