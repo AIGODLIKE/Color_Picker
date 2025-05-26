@@ -46,13 +46,13 @@ class ImguiEvent:
 
             imgui.text("Hello world!")
 
-            self.draw_color_picker(context)
-            self.window_position = imgui.get_window_pos()
             if imgui.button("Show Test"):
-                # print("aaa", self.show_test)
                 self.show_test = not self.show_test
             if self.show_test:
                 imgui.show_demo_window()
+
+            self.draw_color_picker(context)
+            self.window_position = imgui.get_window_pos()
 
             imgui.end()
             imgui.end_frame()

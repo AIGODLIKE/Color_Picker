@@ -366,10 +366,10 @@ class ColorWidget:
 
     def draw_h_bar(self):
         from imgui_bundle import imgui
-        slider_flag = imgui.SliderFlags_.no_input
-        gradient_size = [imgui.calc_item_width(), 19]
 
         def draw(p0, p1):
+            slider_flag = imgui.SliderFlags_.no_input
+            gradient_size = [imgui.calc_item_width(), 19]
             h, s, v = self.start_hsv
 
             col_hues = [
@@ -417,10 +417,10 @@ class ColorWidget:
 
     def draw_s_bar(self):
         from imgui_bundle import imgui
-        slider_flag = imgui.SliderFlags_.no_input
-        gradient_size = [imgui.calc_item_width(), 19]
 
         def draw(p0, p1):
+            slider_flag = imgui.SliderFlags_.no_input
+            gradient_size = [imgui.calc_item_width(), 19]
             h, s, v = self.start_hsv
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
@@ -450,10 +450,10 @@ class ColorWidget:
 
     def draw_v_bar(self):
         from imgui_bundle import imgui
-        slider_flag = imgui.SliderFlags_.no_input
-        gradient_size = [imgui.calc_item_width(), 19]
 
         def draw(p0, p1):
+            slider_flag = imgui.SliderFlags_.no_input
+            gradient_size = [imgui.calc_item_width(), 19]
             h, s, v = self.start_hsv
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
@@ -488,6 +488,8 @@ class ColorWidget:
         gradient_size = [imgui.calc_item_width(), 19]
 
         def draw(p0, p1):
+            slider_flag = imgui.SliderFlags_.no_input
+            gradient_size = [imgui.calc_item_width(), 19]
             r, g, b = self.from_start_hsv_get_rgb()
             draw_list.add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                   imgui.ImVec2(p1[0] - 2, p1[1]),
@@ -526,6 +528,8 @@ class ColorWidget:
         gradient_size = [imgui.calc_item_width(), 19]
 
         def draw(p0, p1):
+            slider_flag = imgui.SliderFlags_.no_input
+            gradient_size = [imgui.calc_item_width(), 19]
             r, g, b = self.from_start_hsv_get_rgb()
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
@@ -559,11 +563,10 @@ class ColorWidget:
 
     def draw_b_bar(self):
         from imgui_bundle import imgui
-        slider_flag = imgui.SliderFlags_.no_input
-        draw_list = imgui.get_window_draw_list()
-        gradient_size = [imgui.calc_item_width(), 19]
 
         def draw(p0, p1):
+            slider_flag = imgui.SliderFlags_.no_input
+            gradient_size = [imgui.calc_item_width(), 19]
             r, g, b = self.from_start_hsv_get_rgb()
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
@@ -592,3 +595,40 @@ class ColorWidget:
                 self.set_color(bpy.context, Color((r, g, b)), sync_to_hsv=True)
 
         ColorBar(draw)
+
+    def switch_button(self):
+        from imgui_bundle import imgui
+        from ..utils import get_pref
+
+        window = imgui.internal.get_current_window()
+        draw_list = window.draw_list
+        pos = imgui.ImVec2(window.dc.cursor_pos.x + 2, window.dc.cursor_pos.y - 8)
+        imgui.set_cursor_pos(imgui.ImVec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y - 8))
+        size = 30
+        center = imgui.ImVec2(pos.x + size / 2, pos.y + size / 2)
+        imgui.push_style_color(21, imgui.ImVec4(0, 0, 0, 0.1))
+        imgui.push_style_color(22, imgui.ImVec4(0, 0, 0, 0.1))
+        imgui.push_style_color(23, imgui.ImVec4(0, 0, 0, 0.1))
+
+        pref = get_pref()
+        # 绘制按钮
+        if imgui.button("", imgui.ImVec2(size, size)):
+            pref.picker_switch = not pref.picker_switch
+
+        imgui.pop_style_color(3)
+
+        size /= 2
+        position = center
+        if pref.picker_switch:
+            draw_list.add_triangle_filled(
+                imgui.ImVec2(position[0] + size, position[1] + size),
+                imgui.ImVec2(position[0] - size, position[1] + size),
+                imgui.ImVec2(position[0], position[1] - size),
+                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
+            )
+        else:
+            draw_list.add_rect_filled(
+                imgui.ImVec2(position[0] - size, position[1] - size),
+                imgui.ImVec2(position[0] + size, position[1] + size),
+                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
+            )
