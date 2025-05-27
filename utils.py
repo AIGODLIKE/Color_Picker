@@ -16,6 +16,9 @@ def get_tool_prop(context):
 
 
 def get_brush(context):
+    """
+    bpy.data.brushes["Paint Hard", "C:\\Program Files\\Blender Foundation\\Blender 4.4\\4.4\\datafiles\\assets\\brushes\\essentials_brushes-mesh_sculpt.blend"].strength
+    """
     mode = context.object.mode
     tool_settings = context.tool_settings
     if mode == 'VERTEX_PAINT':  # 在顶点绘制模式下
@@ -31,6 +34,6 @@ def get_brush(context):
         brush = tool_settings.gpencil_vertex_paint.brush
         return brush
     elif mode == 'SCULPT':
-        unified_paint_settings = tool_settings.unified_paint_settings
-        return unified_paint_settings
+        brush = tool_settings.sculpt.brush
+        return brush
     return None

@@ -672,40 +672,6 @@ class ColorWidget:
                 imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
             )
 
-    def draw_palettes(self):
-        from imgui_bundle import imgui
-
-        colors = [c.color for c in self.get_palette().colors]
-
-        window = imgui.internal.get_current_window()
-        if window.skip_items:
-            return False
-
-        num = min(len(colors), 36)
-        imgui.push_style_var(12, 0)
-        imgui.push_style_var(14, imgui.ImVec2(1, 1))
-        imgui.push_style_var(15, imgui.ImVec2(1, 1))
-
-        imgui.begin_group()
-        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
-        imgui.set_cursor_pos(start_pos)
-        flag = imgui.SliderFlags_.no_input.value
-        s_size = 20
-        if num:
-            for i in range(num):
-                if i % 12 == 0:
-                    if i != 0:
-                        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y + 1)
-                        imgui.set_cursor_pos(start_pos)
-                else:
-                    imgui.same_line()
-                if imgui.color_button(f'palette##{i}', imgui.ImVec4(*colors[i], 1.0), flag,
-                                      imgui.ImVec2(s_size, s_size)):
-                    self.set_color(bpy.context, Color(colors[i]))
-
-        imgui.end_group()
-        imgui.pop_style_var(3)
-
     def draw_brush_size(self):
         from imgui_bundle import imgui
         context = bpy.context
@@ -761,9 +727,48 @@ class ColorWidget:
 
         imgui.end_group()
 
+    def draw_palettes(self):
+        from imgui_bundle import imgui
+
+        # imgui.begin_vertical("draw_palettes")
+        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
+        self.draw_preview_color()
+
+        colors = [c.color for c in self.get_palette().colors]
+
+        window = imgui.internal.get_current_window()
+        if window.skip_items:
+            return False
+
+        num = min(len(colors), 36)
+        imgui.push_style_var(12, 0)
+        imgui.push_style_var(14, imgui.ImVec2(1, 1))
+        imgui.push_style_var(15, imgui.ImVec2(1, 1))
+
+        imgui.begin_group()
+        imgui.set_cursor_pos(start_pos)
+        flag = imgui.SliderFlags_.no_input.value
+        s_size = 20
+        if num:
+            for i in range(num):
+                if i % 12 == 0:
+                    if i != 0:
+                        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y + 1)
+                        imgui.set_cursor_pos(start_pos)
+                else:
+                    imgui.same_line()
+                if imgui.color_button(f'palette##{i}', imgui.ImVec4(*colors[i], 1.0), flag,
+                                      imgui.ImVec2(s_size, s_size)):
+                    self.set_color(bpy.context, Color(colors[i]))
+
+        # imgui.end_vertical()
+        imgui.end_group()
+        imgui.pop_style_var(3)
+
     def draw_preview_color(self):
         from imgui_bundle import imgui
 
+        color = self.start_color
         backup_color = color
         pre_color = color
 
@@ -773,18 +778,19 @@ class ColorWidget:
         imgui.push_style_var(14, imgui.ImVec2(-2, -2))
         imgui.push_style_var(15, imgui.ImVec2(-2, -2))
         imgui.begin_group()
-        s_size = 20
-        flag = imgui.ColorEditFlags_.no_drag_drop
+
+        s_size = 40
+        flag = imgui.ColorEditFlags_.no_drag_drop.value
         changed = imgui.color_button('##current', imgui.ImVec4(*color, 1.0), flag,
-                                     imgui.ImVec2(s_size * 2.5 - 2, s_size * 1.25))
-        if imgui.color_button('##origin', imgui.ImVec4(*backup_color, 1.0), flag,
-                              imgui.ImVec2(s_size * 1.25, 1.25 * s_size)):
-            set_brush_color_based_on_mode(backup_color)
-            colors.insert(0, backup_color)
-        imgui.same_line()
-        if imgui.color_button('##previous', imgui.ImVec4(*(colors[1] if len(colors) > 1 else pre_color), 1.0), flag,
-                              imgui.ImVec2(s_size * 1.25, 1.25 * s_size)):
-            set_brush_color_based_on_mode(colors[1] if len(colors) > 1 else pre_color)
-            colors.insert(0, colors[1] if len(colors) > 1 else pre_color)
+                                     imgui.ImVec2(s_size, s_size))
+        # if imgui.color_button('##origin', imgui.ImVec4(*backup_color, 1.0), flag,
+        #                       imgui.ImVec2(s_size * 1.25, 1.25 * s_size)):
+        #     imgui.same_line()
+
+        # if imgui.color_button('##previous', imgui.ImVec4(*(colors[1] if len(colors) > 1 else pre_color), 1.0), flag,
+        #                       imgui.ImVec2(s_size * 1.25, 1.25 * s_size)):
+        #     set_brush_color_based_on_mode(colors[1] if len(colors) > 1 else pre_color)
+        #     colors.insert(0, colors[1] if len(colors) > 1 else pre_color)
+
         imgui.end_group()
         imgui.pop_style_var(3)

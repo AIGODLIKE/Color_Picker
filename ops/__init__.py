@@ -1,14 +1,14 @@
 import bpy
 from mathutils import Vector
 
-from .color_picker import ImguiColorPicker
+from .draw import Draw
 from .color_sync import ColorSync
 from .color_widget import ColorWidget
 from .event_handle import ImguiEvent
 from .key import SyncKey
 
 
-class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidget, ImguiColorPicker):
+class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidget, Draw):
     bl_idname = "paint.color_picker"
     bl_label = "Color picker"
     bl_options = {'REGISTER', 'UNDO'}

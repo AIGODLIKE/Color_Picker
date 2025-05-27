@@ -30,7 +30,7 @@ class ColorSync:
     def set_hsv(self, context, h, s, v):
         import colorsys
         color = colorsys.hsv_to_rgb(h, s, v)
-        print("set_hsv", h, s, v, end=None)
+        # print("set_hsv", h, s, v, end=None)
         self.set_color(context, Color(color))
 
     def add_palettes_color(self, context, color):
@@ -82,9 +82,7 @@ class ColorSync:
 
     @staticmethod
     def get_strength(context):
-        """bpy.data.brushes["Paint Hard", "C:\\Program Files\\Blender Foundation\\Blender 4.4\\4.4\\datafiles\\assets\\brushes\\essentials_brushes-mesh_vertex.blend"].strength"""
         brush = get_brush(context)
-        # if brush := getattr(prop, "brush"):
         strength = getattr(brush, "strength", None)
         if strength is not None:
             return strength
