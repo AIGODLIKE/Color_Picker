@@ -15,7 +15,7 @@ Color_Picker_Imgui_options_menu = True
 Color_Picker_Imgui_hdr = False
 import copy
 
-from ..utils import  get_pref
+from ..utils import get_pref
 
 
 class ImguiColorPicker:
@@ -40,8 +40,21 @@ class ImguiColorPicker:
 
     def draw_right(self, context):
         from imgui_bundle import imgui
-        imgui.begin_vertical("Right")
 
+        imgui.begin_group()
+        imgui.begin_vertical("Right")
+        self.draw_hsv_rgb()
+
+        self.draw_brush_size()
+        self.draw_brush_strength()
+        # self.draw_palettes()
+        # self.draw_preview_color()
+
+        imgui.end_vertical()
+        imgui.end_group()
+
+    def draw_hsv_rgb(self):
+        from imgui_bundle import imgui
         imgui.begin_group()
         self.draw_h_bar()
         self.draw_s_bar()
@@ -49,9 +62,6 @@ class ImguiColorPicker:
         self.draw_r_bar()
         self.draw_g_bar()
         self.draw_b_bar()
-        self.draw_palettes()
-
-        imgui.end_vertical()
         imgui.end_group()
 
     def old(self, context):

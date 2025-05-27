@@ -40,11 +40,13 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
         return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
+        self.mouse = Vector((event.mouse_region_x, event.mouse_region_y))
+
         if not context.area:
             self.exit(context)
             return {"CANCELLED"}
-        elif self.check_region(context, event):
-            return {"PASS_THROUGH"}
+        # elif self.check_region(context, event):
+        #     return {"PASS_THROUGH"}
 
         if event.type in ("ESC", "RIGHTMOUSE"):
             self.exit(context)
@@ -65,7 +67,7 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
         鼠标不在 region 范围则不更新
         """
 
-        x, y = self.mouse = Vector((event.mouse_region_x, event.mouse_region_y))
+        x, y = self.mouse
         w, h = context.region.width, context.region.height
 
         if 0 > x or x > w or 0 > y or y > h:

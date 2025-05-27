@@ -16,14 +16,18 @@ class SyncKey:
 
         if event_type == 'LEFTMOUSE':
             io.add_mouse_button_event(0, is_press)
+            if not is_press:
+                self.add_palettes_color(context, self.start_color)
         elif event_type == 'RIGHTMOUSE':
             io.add_mouse_button_event(1, is_press)
         elif event_type == 'MIDDLEMOUSE':
             io.add_mouse_button_event(2, is_press)
-        if event_type == 'WHEELUPMOUSE':
+        elif event_type == 'WHEELUPMOUSE':
             io.add_mouse_wheel_event(0, 1)
         elif event_type == 'WHEELDOWNMOUSE':
             io.add_mouse_wheel_event(0, -1)
+        elif event_type == "F12" and is_press:
+            self.show_test = not self.show_test
 
         # 处理 Unicode 输入
         if event.unicode and 0 < (char := ord(event.unicode)) < 0x10000:

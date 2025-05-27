@@ -97,7 +97,7 @@ class ColorBar:
         from imgui_bundle import imgui
 
         imgui.begin_group()
-        imgui.set_next_item_width(self.slider_width)
+        # imgui.set_next_item_width(self.slider_width)
 
         col = imgui.Col_
         imgui.push_style_color(col.frame_bg, imgui.ImVec4(1 / 7.0, 0.6, 1, 0))
@@ -105,7 +105,7 @@ class ColorBar:
         imgui.push_style_color(col.frame_bg_active, imgui.ImVec4(1.0, 1.0, 1.0, 0))
         imgui.push_style_color(col.slider_grab, imgui.ImVec4(0.9, 0.9, 0.9, 0.0))
         imgui.push_style_color(col.slider_grab_active, imgui.ImVec4(0.9, 0.9, 0.9, 0.0))
-        gradient_size = [imgui.calc_item_width(), 19]
+        gradient_size = [imgui.calc_item_width(), 20]
 
         p0 = imgui.get_cursor_screen_pos()
         p1 = (p0.x + gradient_size[0], p0.y + gradient_size[1])
@@ -369,7 +369,7 @@ class ColorWidget:
 
         def draw(p0, p1):
             slider_flag = imgui.SliderFlags_.no_input
-            gradient_size = [imgui.calc_item_width(), 19]
+            gradient_size = [imgui.calc_item_width(), 20]
             h, s, v = self.start_hsv
 
             col_hues = [
@@ -420,7 +420,7 @@ class ColorWidget:
 
         def draw(p0, p1):
             slider_flag = imgui.SliderFlags_.no_input
-            gradient_size = [imgui.calc_item_width(), 19]
+            gradient_size = [imgui.calc_item_width(), 20]
             h, s, v = self.start_hsv
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
@@ -453,7 +453,7 @@ class ColorWidget:
 
         def draw(p0, p1):
             slider_flag = imgui.SliderFlags_.no_input
-            gradient_size = [imgui.calc_item_width(), 19]
+            gradient_size = [imgui.calc_item_width(), 20]
             h, s, v = self.start_hsv
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
@@ -483,14 +483,13 @@ class ColorWidget:
 
     def draw_r_bar(self):
         from imgui_bundle import imgui
-        slider_flag = imgui.SliderFlags_.no_input
-        draw_list = imgui.get_window_draw_list()
-        gradient_size = [imgui.calc_item_width(), 19]
 
         def draw(p0, p1):
             slider_flag = imgui.SliderFlags_.no_input
-            gradient_size = [imgui.calc_item_width(), 19]
+            draw_list = imgui.get_window_draw_list()
+            gradient_size = [imgui.calc_item_width(), 20]
             r, g, b = self.from_start_hsv_get_rgb()
+
             draw_list.add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                   imgui.ImVec2(p1[0] - 2, p1[1]),
                                                   imgui.color_convert_float4_to_u32(
@@ -521,15 +520,11 @@ class ColorWidget:
         ColorBar(draw)
 
     def draw_g_bar(self):
-
         from imgui_bundle import imgui
-        slider_flag = imgui.SliderFlags_.no_input
-        draw_list = imgui.get_window_draw_list()
-        gradient_size = [imgui.calc_item_width(), 19]
 
         def draw(p0, p1):
             slider_flag = imgui.SliderFlags_.no_input
-            gradient_size = [imgui.calc_item_width(), 19]
+            gradient_size = [imgui.calc_item_width(), 20]
             r, g, b = self.from_start_hsv_get_rgb()
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
@@ -566,8 +561,9 @@ class ColorWidget:
 
         def draw(p0, p1):
             slider_flag = imgui.SliderFlags_.no_input
-            gradient_size = [imgui.calc_item_width(), 19]
+            gradient_size = [imgui.calc_item_width(), 20]
             r, g, b = self.from_start_hsv_get_rgb()
+
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
                                                                      imgui.color_convert_float4_to_u32(
@@ -633,18 +629,143 @@ class ColorWidget:
                 imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
             )
 
+
+    @staticmethod
+    def draw_switch_button():
+        from imgui_bundle import imgui
+        from ..utils import get_pref
+
+        pos = imgui.ImVec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y - 30)
+
+        imgui.set_cursor_pos(pos)
+
+        size = 20
+        center = imgui.ImVec2(pos.x + size / 2, pos.y + size / 2)
+
+        pref = get_pref()
+        picker_switch = pref.picker_switch
+
+        if imgui.button("", imgui.ImVec2(size, size)):  # 绘制按钮
+            pref.picker_switch = not pref.picker_switch
+        imgui.push_style_color(21, imgui.ImVec4(0, 0, 0, 0.1))
+        imgui.push_style_color(22, imgui.ImVec4(0, 0, 0, 0.1))
+        imgui.push_style_color(23, imgui.ImVec4(0, 0, 0, 0.1))
+        imgui.pop_style_color(3)
+
+        size /= 2
+        position = center
+        position = pos
+        imgui.set_cursor_pos(pos)
+
+        if picker_switch:
+            imgui.get_window_draw_list().add_triangle_filled(
+                imgui.ImVec2(position[0] + size, position[1] + size),
+                imgui.ImVec2(position[0] - size, position[1] + size),
+                imgui.ImVec2(position[0], position[1] - size),
+                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
+            )
+        else:
+            ...
+            imgui.get_window_draw_list().add_rect_filled(
+                imgui.ImVec2(position[0] - size, position[1] - size),
+                imgui.ImVec2(position[0] + size, position[1] + size),
+                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
+            )
+
     def draw_palettes(self):
         from imgui_bundle import imgui
 
-        color = self.start_color
-        backup_color = color
-        pre_color = color
         colors = [c.color for c in self.get_palette().colors]
 
-        slider_width = 256
         window = imgui.internal.get_current_window()
         if window.skip_items:
             return False
+
+        num = min(len(colors), 36)
+        imgui.push_style_var(12, 0)
+        imgui.push_style_var(14, imgui.ImVec2(1, 1))
+        imgui.push_style_var(15, imgui.ImVec2(1, 1))
+
+        imgui.begin_group()
+        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
+        imgui.set_cursor_pos(start_pos)
+        flag = imgui.SliderFlags_.no_input.value
+        s_size = 20
+        if num:
+            for i in range(num):
+                if i % 12 == 0:
+                    if i != 0:
+                        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y + 1)
+                        imgui.set_cursor_pos(start_pos)
+                else:
+                    imgui.same_line()
+                if imgui.color_button(f'palette##{i}', imgui.ImVec4(*colors[i], 1.0), flag,
+                                      imgui.ImVec2(s_size, s_size)):
+                    self.set_color(bpy.context, Color(colors[i]))
+
+        imgui.end_group()
+        imgui.pop_style_var(3)
+
+    def draw_brush_size(self):
+        from imgui_bundle import imgui
+        context = bpy.context
+        size = self.get_size(context)
+
+        imgui.begin_group()
+
+        start_ops = imgui.ImVec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y + 1)
+        imgui.set_cursor_pos(start_ops)
+        imgui.progress_bar(size / 500, imgui.ImVec2(imgui.calc_item_width() - 3, 20.0), 'R:{}'.format(size))
+        flag = imgui.SliderFlags_.no_input.value
+
+        col = imgui.Col_
+        imgui.push_style_color(col.frame_bg.value, imgui.ImVec4(1 / 7.0, 0.6, 1, 0))
+        imgui.push_style_color(col.frame_bg_hovered.value, imgui.ImVec4(1 / 7.0, .7, 1, 0))
+        imgui.push_style_color(col.frame_bg_active.value, imgui.ImVec4(1.0, 1.0, 1.0, 0))
+        imgui.set_cursor_pos(start_ops)
+
+        change, size = imgui.drag_float('##Radius', size, 1, 1, 500, '', flags=flag)
+        if change:
+            self.set_size(context, int(size))
+
+        imgui.pop_style_color(3)
+        imgui.end_group()
+
+    def draw_brush_strength(self):
+        from imgui_bundle import imgui
+        strength = self.get_strength(bpy.context)
+
+        imgui.begin_group()
+
+        start_ops = imgui.ImVec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y + 1)
+
+        progress = 0.0
+        progress_dir = 1.0
+        progress += progress_dir * 0.4 * imgui.get_io().delta_time
+
+        imgui.set_cursor_pos(start_ops)
+        imgui.progress_bar(strength, imgui.ImVec2(imgui.calc_item_width() - 3, 20.0), f'S:{strength:.3f}')
+
+        col = imgui.Col_
+        imgui.push_style_color(col.frame_bg.value, imgui.ImVec4(1 / 7.0, 0.6, 1, 0))
+        imgui.push_style_color(col.frame_bg_hovered.value, imgui.ImVec4(1 / 7.0, .7, 1, 0))
+        imgui.push_style_color(col.frame_bg_active.value, imgui.ImVec4(1.0, 1.0, 1.0, 0))
+
+        imgui.set_cursor_pos(start_ops)
+        chan, strength = imgui.drag_float('##Strength', strength, 0.005, 0, 1.0, '',
+                                          flags=imgui.SliderFlags_.no_input.value)
+
+        imgui.pop_style_color(3)
+        if chan:
+            self.set_strength(bpy.context, strength)
+
+        imgui.end_group()
+
+    def draw_preview_color(self):
+        from imgui_bundle import imgui
+
+        backup_color = color
+        pre_color = color
 
         start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
         imgui.set_cursor_pos(start_pos)
@@ -658,7 +779,6 @@ class ColorWidget:
                                      imgui.ImVec2(s_size * 2.5 - 2, s_size * 1.25))
         if imgui.color_button('##origin', imgui.ImVec4(*backup_color, 1.0), flag,
                               imgui.ImVec2(s_size * 1.25, 1.25 * s_size)):
-            tmp_c = []
             set_brush_color_based_on_mode(backup_color)
             colors.insert(0, backup_color)
         imgui.same_line()
@@ -666,84 +786,5 @@ class ColorWidget:
                               imgui.ImVec2(s_size * 1.25, 1.25 * s_size)):
             set_brush_color_based_on_mode(colors[1] if len(colors) > 1 else pre_color)
             colors.insert(0, colors[1] if len(colors) > 1 else pre_color)
-        imgui.end_group()
-        imgui.pop_style_var(3)
-
-        # try:
-
-        contex = bpy.context
-        size = self.get_size(contex)
-        strength = self.get_strength(contex)
-
-        imgui.same_line()
-        imgui.begin_group()
-        slider_start_pos = imgui.ImVec2(imgui.get_cursor_pos().x - 4, imgui.get_cursor_pos().y + 1)
-        slider_start_pos2 = imgui.ImVec2(slider_start_pos.x, slider_start_pos.y + 27)  # strength
-        imgui.set_cursor_pos(slider_start_pos)
-        progress = 0.0
-        progress_dir = 1.0
-        progress += progress_dir * 0.4 * imgui.get_io().delta_time
-        slider_width_brush = slider_width - 55
-        imgui.push_style_color(imgui.Col_.frame_bg, imgui.ImVec4(0.33, 0.33, 0.33, 1))
-        imgui.push_style_color(imgui.Col_.plot_histogram, imgui.ImVec4(0.3, 0.44, 0.7, 1))
-
-        imgui.progress_bar(size / 200, imgui.ImVec2(slider_width_brush, 20.0), 'R:{}'.format(size))
-        imgui.set_cursor_pos(slider_start_pos2)
-        imgui.progress_bar(strength, imgui.ImVec2(slider_width_brush, 20.0), f'S:{strength:.3f}')
-        imgui.pop_style_color(2)
-
-        if 480 >= size >= 190:
-            v_max_r = 500
-            v_min_r = 1
-        elif size > 480:
-            v_max_r = 1000
-            v_min_r = 480
-        else:
-            v_max_r = 200
-            v_min_r = 1
-
-        imgui.set_cursor_pos(slider_start_pos)
-
-        flag = imgui.SliderFlags_.no_input.value
-        imgui.push_style_color(imgui.Col_.frame_bg, imgui.ImVec4(1 / 7.0, 0.6, 1, 0))
-        imgui.push_style_color(imgui.Col_.frame_bg_hovered, imgui.ImVec4(1 / 7.0, .7, 1, 0))
-        imgui.push_style_color(imgui.Col_.frame_bg_active, imgui.ImVec4(1.0, 1.0, 1.0, 0))
-        imgui.set_next_item_width(slider_width_brush)
-        chan, size = imgui.drag_float('##Radius', size, 1, v_min_r, v_max_r, '', flags=flag)
-        imgui.set_cursor_pos(slider_start_pos2)
-        imgui.set_next_item_width(slider_width_brush)
-        chan, strength = imgui.drag_float('##Strength', strength, 0.005, 0.0, 1.0, '', flags=flag)
-        imgui.pop_style_color(3)
-        self.set_size(contex, int(size))
-        self.set_strength(contex, strength)
-        # brush_value_based_on_mode(set=True, size=int(size))
-        # brush_value_based_on_mode(set=True, strength=strength)
-        imgui.end_group()
-
-        num = min(len(colors), 36)
-        imgui.push_style_var(12, 0)
-        imgui.push_style_var(14, imgui.ImVec2(1, 1))
-        imgui.push_style_var(15, imgui.ImVec2(1, 1))
-
-        imgui.begin_group()
-        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
-        imgui.set_cursor_pos(start_pos)
-        if num:
-            tmp_c = []
-            for i in range(num):
-                if i % 12 == 0:
-                    if i != 0:
-                        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y + 1)
-                        imgui.set_cursor_pos(start_pos)
-                else:
-
-                    imgui.same_line()
-                if imgui.color_button(f'palette##{i}', imgui.ImVec4(*colors[i], 1.0), flag,
-                                      imgui.ImVec2(s_size, s_size)):
-                    set_brush_color_based_on_mode(copy.deepcopy(colors[i]))
-                    tmp_c = copy.deepcopy(colors[i])
-
-            if len(tmp_c):
-                colors.insert(0, copy.deepcopy(tmp_c))
         imgui.end_group()
         imgui.pop_style_var(3)

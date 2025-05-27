@@ -38,22 +38,26 @@ class ImguiEvent:
             if self.draw_error:
                 return
             self.create_context(context)
-            imgui.get_io().display_size = (context.region.width, context.region.height)
+            imgui.push_style_var(imgui.StyleVar_.window_rounding.value, 10)
+            imgui.push_style_var(imgui.StyleVar_.window_border_size.value, 0)
+            # imgui.StyleVar_.window_border_size = 0
 
+            imgui.get_io().display_size = (context.region.width, context.region.height)
             imgui.new_frame()
             self.start_window_pos(context)
             self.start_window(context)
 
-            imgui.text("Hello world!")
-
-            if imgui.button("Show Test"):
-                self.show_test = not self.show_test
+            # imgui.text("Hello world!")
+            #
+            # if imgui.button("Show Test"):
+            #     self.show_test = not self.show_test
             if self.show_test:
                 imgui.show_demo_window()
 
             self.draw_color_picker(context)
             self.window_position = imgui.get_window_pos()
 
+            imgui.pop_style_var(1)
             imgui.end()
             imgui.end_frame()
             imgui.render()
@@ -76,10 +80,11 @@ class ImguiEvent:
             # flags.no_scroll_with_mouse
         )
         window_name = "Main Window"
+
         imgui.begin(window_name, False, window_flags)
         # imgui.set_window_focus(window_name)
 
-        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
+        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y)
         imgui.set_cursor_pos(start_pos)
 
     def start_window_pos(self, context):
