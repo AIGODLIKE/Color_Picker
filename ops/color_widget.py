@@ -676,21 +676,24 @@ class ColorWidget:
         from imgui_bundle import imgui
         context = bpy.context
         size = self.get_size(context)
+        col = imgui.Col_
+        color = bpy.context.preferences.themes[0].user_interface.wcol_numslider.item[:]
 
         imgui.begin_group()
 
         start_ops = imgui.ImVec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y + 1)
         imgui.set_cursor_pos(start_ops)
+        imgui.push_style_color(col.plot_histogram.value, imgui.ImVec4(*(*color[:3], 1)))
         imgui.progress_bar(size / 500, imgui.ImVec2(imgui.calc_item_width() - 3, 20.0), 'R:{}'.format(size))
+        imgui.pop_style_color(1)
         flag = imgui.SliderFlags_.no_input.value
 
-        col = imgui.Col_
         imgui.push_style_color(col.frame_bg.value, imgui.ImVec4(1 / 7.0, 0.6, 1, 0))
         imgui.push_style_color(col.frame_bg_hovered.value, imgui.ImVec4(1 / 7.0, .7, 1, 0))
         imgui.push_style_color(col.frame_bg_active.value, imgui.ImVec4(1.0, 1.0, 1.0, 0))
         imgui.set_cursor_pos(start_ops)
 
-        change, size = imgui.drag_float('##Radius', size, 1, 1, 500, '', flags=flag)
+        change, size = imgui.drag_float('##Size', size, 1, 1, 500, '', flags=flag)
         if change:
             self.set_size(context, int(size))
 
@@ -703,6 +706,8 @@ class ColorWidget:
 
         imgui.begin_group()
 
+        col = imgui.Col_
+        color = bpy.context.preferences.themes[0].user_interface.wcol_numslider.item[:]
         start_ops = imgui.ImVec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y + 1)
 
         progress = 0.0
@@ -710,9 +715,10 @@ class ColorWidget:
         progress += progress_dir * 0.4 * imgui.get_io().delta_time
 
         imgui.set_cursor_pos(start_ops)
+        imgui.push_style_color(col.plot_histogram.value, imgui.ImVec4(*(*color[:3], 1)))
         imgui.progress_bar(strength, imgui.ImVec2(imgui.calc_item_width() - 3, 20.0), f'S:{strength:.3f}')
+        imgui.pop_style_color(1)
 
-        col = imgui.Col_
         imgui.push_style_color(col.frame_bg.value, imgui.ImVec4(1 / 7.0, 0.6, 1, 0))
         imgui.push_style_color(col.frame_bg_hovered.value, imgui.ImVec4(1 / 7.0, .7, 1, 0))
         imgui.push_style_color(col.frame_bg_active.value, imgui.ImVec4(1.0, 1.0, 1.0, 0))

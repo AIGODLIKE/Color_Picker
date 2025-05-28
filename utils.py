@@ -51,4 +51,3 @@ def get_brush(context):
         brush = tool_settings.gpencil_paint.brush
         return brush
     return None
-
