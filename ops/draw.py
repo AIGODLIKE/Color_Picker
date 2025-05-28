@@ -94,6 +94,10 @@ class Draw:
         from imgui_bundle import imgui
         imgui.begin_vertical("Left")
 
+        start_pos = imgui.get_cursor_pos()
+        # self.draw_switch_button()
+        self.switch_button()
+        imgui.set_cursor_pos(start_pos)
         self.draw_color_picker_wheel(get_pref().picker_switch)
         # self.switch_button()
         # self.draw_demo_vertial_scrolling()
