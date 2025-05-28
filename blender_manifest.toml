@@ -1,13 +1,10 @@
-schema_version = "1.0.4"
+schema_version = "1.0.0"
 
-# Example of manifest file for a Blender extension
-# Change the values according to your extension
 id = "Color_Picker"
 version = "1.0.4"
 name = "Color Picker"
-tagline = "Setting the DPI of an image in Blender"
-maintainer = "Cupcko <649730016@qq.com>"
-# Supported types: "add-on", "theme"
+tagline = "Simple picker color in Blender"
+maintainer = "AIGODLIKE Community, Cupcko <649730016@qq.com>, 小萌新"
 type = "add-on"
 
 # Optional: add-ons can list which resources they will require:
@@ -15,26 +12,28 @@ type = "add-on"
 # * "network" (for internet access)
 # * "camera" (to capture photos and videos)
 # * "microphone" (to capture audio)
-permissions = ["files", "network"]
+permissions = []
 
 # Optional link to documentation, support, source files, etc
- website = "https://github.com/AIGODLIKE/Color_Picker"
+website = "https://github.com/AIGODLIKE/Color_Picker"
 
-# Optional list defined by Blender and server, see:
-# https://docs.blender.org/manual/en/dev/extensions/tags.html
-tags = ["Render"]
+# https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
+tags = ["Render", "Material", "Paint"]
 
 blender_version_min = "4.2.0"
-# Optional: maximum supported Blender version
-# blender_version_max = "5.1.0"
 
-# License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
-# https://docs.blender.org/manual/en/dev/extensions/licenses.html
-license = [
-  "SPDX:GPL-2.0-or-later",
-]
-# Optional: required by some licenses.
+license = ["SPDX:GPL-3.0-or-later", ]
+
 copyright = [
-  "2002-2024 Cupcko",
-  "2022 AIGODLIKE Community",
+    "2002-2024 Cupcko",
+    "2022 AIGODLIKE Community",
+]
+
+wheels = [
+    "./wheels/imgui_bundle-1.6.3-cp311-cp311-win_amd64.whl",
+    "./wheels/typing_extensions-4.13.2-py3-none-any.whl",
+    "./wheels/pydantic_core-2.33.2-cp311-cp311-win_amd64.whl",
+    "./wheels/pydantic-2.11.4-py3-none-any.whl",
+    "./wheels/munch-4.0.0-py2.py3-none-any.whl",
+    "./wheels/typing_inspection-0.4.1-py3-none-any.whl",
 ]
