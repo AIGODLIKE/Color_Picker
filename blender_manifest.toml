@@ -12,7 +12,7 @@ type = "add-on"
 # * "network" (for internet access)
 # * "camera" (to capture photos and videos)
 # * "microphone" (to capture audio)
-permissions = ["files", "network"]
+permissions = []
 
 # Optional link to documentation, support, source files, etc
 website = "https://github.com/AIGODLIKE/Color_Picker"
@@ -30,16 +30,10 @@ copyright = [
 ]
 
 wheels = [
-    #    "./wheels/imgui-2.0.0-cp311-cp311-win_amd64.whl",
     "./wheels/imgui_bundle-1.6.3-cp311-cp311-win_amd64.whl",
     "./wheels/typing_extensions-4.13.2-py3-none-any.whl",
     "./wheels/pydantic_core-2.33.2-cp311-cp311-win_amd64.whl",
     "./wheels/pydantic-2.11.4-py3-none-any.whl",
     "./wheels/munch-4.0.0-py2.py3-none-any.whl",
-    #    "./wheels/annotated_types-0.7.0-py3-none-any.whl",
-    #    "./wheels/glfw-2.9.0-py2.py27.py3.py30.py31.py32.py33.py34.py35.py36.py37.py38.p39.p310.p311.p312.p313-none-win_amd64.whl",
-    #    #    "./wheels/numpy-2.2.6-cp311-cp311-win_amd64.whl",
-    #    "./wheels/pillow-11.2.1-cp311-cp311-win_amd64.whl",
-    #    "./wheels/PyOpenGL-3.1.9-py3-none-any.whl",
     "./wheels/typing_inspection-0.4.1-py3-none-any.whl",
 ]
