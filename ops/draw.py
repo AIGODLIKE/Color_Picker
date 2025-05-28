@@ -96,6 +96,7 @@ class Draw:
 
         self.draw_color_picker_wheel(get_pref().picker_switch)
         # self.switch_button()
+        # self.draw_demo_vertial_scrolling()
 
         imgui.end_vertical()
 
@@ -110,6 +111,7 @@ class Draw:
         self.draw_brush_strength()
         self.draw_palettes()
 
+
         imgui.end_vertical()
         imgui.end_group()
 
@@ -123,7 +125,6 @@ class Draw:
         self.draw_g_bar()
         self.draw_b_bar()
         imgui.end_group()
-
 
     def old(self, context):
         colorpicker_changed, picker_pos, picker_pos2, wheel_center = colorpicker('##aa', color, misc_flags, self)

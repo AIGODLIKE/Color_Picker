@@ -1,14 +1,16 @@
 import bpy
 from mathutils import Vector
 
-from .draw import Draw
 from .color_sync import ColorSync
 from .color_widget import ColorWidget
+from .demo import Demo
+from .draw import Draw
 from .event_handle import ImguiEvent
 from .key import SyncKey
+from ..utils import get_brush
 
 
-class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidget, Draw):
+class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidget, Draw, Demo):
     bl_idname = "paint.color_picker"
     bl_label = "Color picker"
     bl_options = {'REGISTER', 'UNDO'}
@@ -17,6 +19,11 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
     mouse: Vector = None
     start_color = None
     start_hsv = None
+
+    @classmethod
+    def poll(cls, context):
+        prop = get_brush(context)
+        return prop is not None
 
     def init_color(self, context):
         self.start_color = self.get_color(context)

@@ -730,47 +730,77 @@ class ColorWidget:
     def draw_palettes(self):
         from imgui_bundle import imgui
 
-        # imgui.begin_vertical("draw_palettes")
-        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
-        self.draw_preview_color()
+        imgui.push_id("##draw_palettes")
 
-        colors = [c.color for c in self.get_palette().colors]
+        colors = list(reversed([c.color for c in self.get_palette().colors]))
 
         window = imgui.internal.get_current_window()
         if window.skip_items:
             return False
 
-        num = min(len(colors), 36)
-        imgui.push_style_var(12, 0)
-        imgui.push_style_var(14, imgui.ImVec2(1, 1))
-        imgui.push_style_var(15, imgui.ImVec2(1, 1))
+        style = imgui.StyleVar_
+        imgui.push_style_var(style.frame_rounding.value, 0)
+        imgui.push_style_var(style.item_spacing.value, imgui.ImVec2(1, 1))
+        imgui.push_style_var(style.item_inner_spacing.value, imgui.ImVec2(1, 1))
+        imgui.push_style_var(style.child_border_size.value, 0)
+        imgui.push_style_var(style.scrollbar_size.value, 2 if len(colors) > 10 else 0)
 
-        imgui.begin_group()
-        imgui.set_cursor_pos(start_pos)
         flag = imgui.SliderFlags_.no_input.value
-        s_size = 20
-        if num:
-            for i in range(num):
-                if i % 12 == 0:
-                    if i != 0:
-                        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y + 1)
-                        imgui.set_cursor_pos(start_pos)
-                else:
-                    imgui.same_line()
-                if imgui.color_button(f'palette##{i}', imgui.ImVec4(*colors[i], 1.0), flag,
-                                      imgui.ImVec2(s_size, s_size)):
-                    self.set_color(bpy.context, Color(colors[i]))
 
-        # imgui.end_vertical()
-        imgui.end_group()
-        imgui.pop_style_var(3)
+        s_size = 20
+
+        row_count = 0
+        column_count = 0
+
+        region = imgui.get_content_region_avail()
+        width = imgui.calc_item_width()
+        child_is_visible = imgui.begin_child(imgui.get_id("draw_palettes"),
+                                             imgui.ImVec2(imgui.calc_item_width(), 63.0),
+                                             True
+                                             )
+        imgui.begin_horizontal("draw_palettes")
+        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y)
+        self.draw_preview_color()
+        imgui.set_cursor_pos(start_pos)
+        max_line_count = int((width + 20) // (s_size + 1))  # 取商 每行能显示多少个
+        max_line_count = 10  # 取商 每行能显示多少个
+
+        if child_is_visible:
+            for index, col in enumerate(colors):
+                if max_line_count - 1 == row_count:
+                    imgui.same_line()
+                    column_count += 1
+                    row_count = 0
+                    offset_pos = imgui.ImVec2(start_pos.x, imgui.get_cursor_pos().y + 2)
+                    imgui.set_cursor_pos(offset_pos)  # 每行间隔
+                    imgui.end_horizontal()
+                    imgui.begin_horizontal(f"draw_palettes {index}")
+
+                is_offset = column_count in (0, 1) and row_count == 0
+                if is_offset:  # 头两行偏移
+                    sf = s_size * 2 + 4
+                    offset_y = (s_size + 1) * column_count
+                    offset_pos = imgui.ImVec2(imgui.get_cursor_pos().x + sf + 1, offset_y)
+                    imgui.set_cursor_pos(offset_pos)
+                    row_count += 2
+                else:
+                    offset_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
+                    imgui.set_cursor_pos(offset_pos)
+
+                if imgui.color_button(f'palette##{col}', imgui.ImVec4(*col, 1.0), flag, imgui.ImVec2(s_size, s_size)):
+                    self.set_color(bpy.context, col, sync_to_hsv=True)
+                row_count += 1
+
+        imgui.end_horizontal()
+        imgui.end_child()
+
+        imgui.pop_style_var(5)
+        imgui.pop_id()
 
     def draw_preview_color(self):
         from imgui_bundle import imgui
 
         color = self.start_color
-        backup_color = color
-        pre_color = color
 
         start_pos = imgui.ImVec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
         imgui.set_cursor_pos(start_pos)
@@ -782,15 +812,6 @@ class ColorWidget:
         s_size = 40
         flag = imgui.ColorEditFlags_.no_drag_drop.value
         changed = imgui.color_button('##current', imgui.ImVec4(*color, 1.0), flag,
-                                     imgui.ImVec2(s_size, s_size))
-        # if imgui.color_button('##origin', imgui.ImVec4(*backup_color, 1.0), flag,
-        #                       imgui.ImVec2(s_size * 1.25, 1.25 * s_size)):
-        #     imgui.same_line()
-
-        # if imgui.color_button('##previous', imgui.ImVec4(*(colors[1] if len(colors) > 1 else pre_color), 1.0), flag,
-        #                       imgui.ImVec2(s_size * 1.25, 1.25 * s_size)):
-        #     set_brush_color_based_on_mode(colors[1] if len(colors) > 1 else pre_color)
-        #     colors.insert(0, colors[1] if len(colors) > 1 else pre_color)
-
+                                     imgui.ImVec2(s_size + 2, s_size + 1))
         imgui.end_group()
         imgui.pop_style_var(3)

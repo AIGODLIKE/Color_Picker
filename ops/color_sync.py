@@ -30,7 +30,6 @@ class ColorSync:
     def set_hsv(self, context, h, s, v):
         import colorsys
         color = colorsys.hsv_to_rgb(h, s, v)
-        # print("set_hsv", h, s, v, end=None)
         self.set_color(context, Color(color))
 
     def add_palettes_color(self, context, color):
