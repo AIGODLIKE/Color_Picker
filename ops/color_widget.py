@@ -592,7 +592,8 @@ class ColorWidget:
 
         ColorBar(draw)
 
-    def switch_button(self):
+    @staticmethod
+    def draw_switch_button():
         from imgui_bundle import imgui
         from ..utils import get_pref
 
@@ -629,57 +630,6 @@ class ColorWidget:
                 imgui.ImVec2(position[0] + size, position[1] + size),
                 imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
             )
-
-
-    @staticmethod
-    def draw_switch_button():
-        from imgui_bundle import imgui
-        from ..utils import get_pref
-
-        # imgui.begin_group()
-        window = imgui.internal.get_current_window()
-        draw_list = window.draw_list
-        pos = imgui.ImVec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y - 30)
-        pos = imgui.get_cursor_pos()
-
-        # imgui.set_cursor_pos(pos)
-
-        size = 20
-        center = imgui.ImVec2(pos.x + size / 2, pos.y + size / 2)
-
-        pref = get_pref()
-        picker_switch = pref.picker_switch
-
-        color = imgui.ImVec4(0.5, 0, 0, 0.0)
-        imgui.push_style_color(21, color)
-        imgui.push_style_color(22, color)
-        imgui.push_style_color(23, color)
-
-        if imgui.button("", imgui.ImVec2(size, size)):  # 绘制按钮
-            pref.picker_switch = not pref.picker_switch
-        imgui.pop_style_color(3)
-
-        # size /= 2
-        position = center
-        # position = pos
-        # pos = imgui.get_cursor_pos()
-        # imgui.set_cursor_pos(pos)
-
-        color = imgui.color_convert_float4_to_u32(imgui.ImVec4(1, 1, 1, 1))
-        if picker_switch:
-            draw_list.add_triangle_filled(
-                imgui.ImVec2(position[0] + size, position[1] + size),
-                imgui.ImVec2(position[0] - size, position[1] + size),
-                imgui.ImVec2(position[0], position[1] - size),
-                color
-            )
-        else:
-            draw_list.add_rect_filled(
-                imgui.ImVec2(position[0] - size, position[1] - size),
-                imgui.ImVec2(position[0] + size, position[1] + size),
-                color
-            )
-        # imgui.end_group()
 
     def draw_brush_size(self):
         from imgui_bundle import imgui
