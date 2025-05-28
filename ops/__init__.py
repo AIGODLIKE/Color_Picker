@@ -22,8 +22,11 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
 
     @classmethod
     def poll(cls, context):
-        prop = get_brush(context)
-        return prop is not None
+        have_brush = get_brush(context) is not None
+        is_3d_view = context.space_data and context.space_data.type == "VIEW_3D"
+        is_edit_image = context.space_data and context.space_data.type == "IMAGE_EDITOR"
+        # print(have_brush, context.space_data.type, is_3d_view)
+        return have_brush and (is_3d_view or is_edit_image)
 
     def init_color(self, context):
         self.start_color = self.get_color(context)
@@ -52,37 +55,30 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
         if not context.area:
             self.exit(context)
             return {"CANCELLED"}
-        # elif self.check_region(context, event):
-        #     return {"PASS_THROUGH"}
 
         if event.type in ("ESC", "RIGHTMOUSE"):
             self.exit(context)
             return {"FINISHED"}
-        elif event.type == "SPACE" and event.value == "RELEASE":
+        elif event.type in {"SPACE", "E"} and event.value == "RELEASE":
             self.exit(context)
             return {"FINISHED"}
 
         self.sync_key(context, event)
-        context.area.tag_redraw()
+        self.refresh(context)
         return {"RUNNING_MODAL"}
 
     def execute(self, context):
         return {"FINISHED"}
 
     def exit(self, context):
-        self.unregister_imgui()
-        context.area.tag_redraw()
+        self.unregister_imgui(context)
+        self.refresh(context)
 
-    def check_region(self, context, event):
-        """
-        鼠标不在 region 范围则不更新
-        """
+    @staticmethod
+    def refresh(context):
+        for area in context.screen.areas:
+            area.tag_redraw()
 
-        x, y = self.mouse
-        w, h = context.region.width, context.region.height
-
-        if 0 > x or x > w or 0 > y or y > h:
-            return True
 
 
 def register():

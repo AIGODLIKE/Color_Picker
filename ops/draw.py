@@ -82,10 +82,7 @@ class Draw:
 
     def draw_color_picker(self, context):
         from imgui_bundle import imgui
-        # start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y + 10)
-        # imgui.set_cursor_pos(start_pos)
-
-        imgui.begin_horizontal("Color")
+        imgui.begin_horizontal("draw_color_picker")
         self.draw_left(context)
         self.draw_right(context)
         imgui.end_horizontal()

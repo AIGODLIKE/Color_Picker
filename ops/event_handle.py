@@ -1,6 +1,3 @@
-import bpy
-
-
 class ImguiEvent:
     handler = None
 
@@ -14,15 +11,14 @@ class ImguiEvent:
     show_test = False
 
     def register_imgui(self, context):
-
         self.create_context(context)
-
-        self.handler = bpy.types.SpaceView3D.draw_handler_add(self.draw_imgui, (context,), 'WINDOW', 'POST_PIXEL')
+        space = context.space_data.bl_rna.type_recast()
+        self.handler = space.draw_handler_add(self.draw_imgui, (context,), 'WINDOW', 'POST_PIXEL')
         self.draw_error = False
         self.window_position = None
 
-    def unregister_imgui(self):
-        bpy.types.SpaceView3D.draw_handler_remove(self.handler, 'WINDOW')
+    def unregister_imgui(self, context):
+        context.space_data.bl_rna.type_recast().draw_handler_remove(self.handler, 'WINDOW')
 
     def create_context(self, context):
         from .render import Renderer
