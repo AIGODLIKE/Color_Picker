@@ -58,6 +58,10 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
         if event.type in ("ESC", "RIGHTMOUSE"):
             self.exit(context)
             return {"FINISHED"}
+        elif event.type == "SPACE" and event.value == "RELEASE":
+            self.exit(context)
+            return {"FINISHED"}
+
         self.sync_key(context, event)
         context.area.tag_redraw()
         return {"RUNNING_MODAL"}
