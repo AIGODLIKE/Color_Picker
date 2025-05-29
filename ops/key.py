@@ -4,6 +4,7 @@ import bpy
 class SyncKey:
 
     def sync_key(self, context: bpy.types.Context, event: bpy.types.Event):
+        return
         import imgui
         io: "imgui.core._IO" = imgui.get_io()
 

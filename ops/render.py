@@ -1,16 +1,18 @@
 import ctypes
-import time
 
 import bpy
 import gpu
-import imgui
 import numpy as np
 from gpu_extras.batch import batch_for_shader
-from imgui.integrations.base import BaseOpenGLRenderer
+from slimgui import imgui
+from slimgui.integrations.base import BaseRenderer
 
 
-class Renderer(BaseOpenGLRenderer):
+class Renderer(BaseRenderer):
     """Integration of ImGui into Blender."""
+
+    def shutdown(self):
+        pass
 
     VERTEX_SHADER_SRC = """
     uniform mat4 ProjMtx;
@@ -58,6 +60,8 @@ class Renderer(BaseOpenGLRenderer):
     instance = None
 
     def __init__(self):
+        from slimgui import imgui
+        self.io = imgui.get_io()
         self._shader_handle = None
         self._vert_handle = None
         self._fragment_handle = None

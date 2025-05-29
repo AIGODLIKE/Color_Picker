@@ -21,13 +21,16 @@ from ..utils import get_pref
 class Draw:
 
     def draw_imgui(self, context):
-        import imgui
+        from slimgui import imgui
         if self.draw_error:
             return
         self.create_context(context)
+        # imgui.show_demo_window()
+        imgui.text("AAAA ")
+        return
         # with imgui.push_style_color()
-        imgui.push_style_var(imgui.StyleVar_.window_rounding.value, 10)
-        imgui.push_style_var(imgui.StyleVar_.window_border_size.value, 0)
+        imgui.push_style_var(imgui.StyleVar_.window_rounding.value, 10.)
+        imgui.push_style_var(imgui.StyleVar_.window_border_size.value, 0.)
 
         imgui.get_io().display_size = (context.region.width, context.region.height)
         imgui.new_frame()
@@ -55,7 +58,7 @@ class Draw:
         self.imgui_backend.render(imgui.get_draw_data())
 
     def start_window(self, context):
-        from imgui_bundle import imgui
+        from slimgui import imgui
 
         flags = imgui.WindowFlags_
         window_flags = (
@@ -74,7 +77,7 @@ class Draw:
         imgui.set_cursor_pos(start_pos)
 
     def start_window_pos(self, context):
-        from imgui_bundle import imgui
+        from slimgui import imgui
         if self.window_position is None:
             x, y = self.mouse
             x, y = x - 50 - imgui.get_style().indent_spacing * 0.5, context.region.height - y - 129 - 10
@@ -82,14 +85,14 @@ class Draw:
             imgui.set_next_window_pos(pos)
 
     def draw_color_picker(self, context):
-        from imgui_bundle import imgui
+        from slimgui import imgui
         imgui.begin_horizontal("draw_color_picker")
         self.draw_left(context)
         self.draw_right(context)
         imgui.end_horizontal()
 
     def draw_left(self, context):
-        from imgui_bundle import imgui
+        from slimgui import imgui
         imgui.begin_vertical("Left")
 
         start_pos = imgui.get_cursor_pos()
@@ -101,7 +104,7 @@ class Draw:
         imgui.end_vertical()
 
     def draw_right(self, context):
-        from imgui_bundle import imgui
+        from slimgui import imgui
 
         imgui.begin_group()
         imgui.begin_vertical("Right")
@@ -116,7 +119,7 @@ class Draw:
         imgui.end_group()
 
     def draw_hsv_rgb(self):
-        from imgui_bundle import imgui
+        from slimgui import imgui
         imgui.begin_group()
         self.draw_h_bar()
         self.draw_s_bar()
