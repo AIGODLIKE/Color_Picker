@@ -4,15 +4,14 @@ import bpy
 class SyncKey:
 
     def sync_key(self, context: bpy.types.Context, event: bpy.types.Event):
-        from imgui_bundle import imgui
-        io = imgui.get_io()
+        import imgui
+        io: "imgui.core._IO" = imgui.get_io()
 
         event_type = event.type
         is_press = event.value == 'PRESS'
-
         # 鼠标 mouse
         x, y = (self.mouse[0], context.region.height - 1 - self.mouse[1])
-        io.add_mouse_pos_event(x, y)
+        io.mouse_pos = (x, y)
 
         if event_type == 'LEFTMOUSE':
             io.add_mouse_button_event(0, is_press)
@@ -36,7 +35,7 @@ class SyncKey:
 
     @staticmethod
     def sync_keyboard(event):
-        from imgui_bundle import imgui
+        import imgui
 
         io = imgui.get_io()
 
@@ -44,34 +43,34 @@ class SyncKey:
         is_press = event.value == 'PRESS'
 
         key_map = {
-            'TAB': imgui.Key.tab,
-            'LEFT_ARROW': imgui.Key.left_arrow,
-            'RIGHT_ARROW': imgui.Key.right_arrow,
-            'UP_ARROW': imgui.Key.up_arrow,
-            'DOWN_ARROW': imgui.Key.down_arrow,
-            'HOME': imgui.Key.home,
-            'END': imgui.Key.end,
-            'INSERT': imgui.Key.insert,
-            'DEL': imgui.Key.delete,
-            'BACK_SPACE': imgui.Key.backspace,
-            'SPACE': imgui.Key.space,
-            'RET': imgui.Key.enter,
-            'ESC': imgui.Key.escape,
-            'PAGE_UP': imgui.Key.page_up,
-            'PAGE_DOWN': imgui.Key.page_down,
-            'A': imgui.Key.a,
-            'C': imgui.Key.c,
-            'V': imgui.Key.v,
-            'X': imgui.Key.x,
-            'Y': imgui.Key.y,
-            'Z': imgui.Key.z,
-            'LEFT_CTRL': imgui.Key.right_ctrl,
-            'RIGHT_CTRL': imgui.Key.left_ctrl,
-            'LEFT_ALT': imgui.Key.left_alt,
-            'RIGHT_ALT': imgui.Key.right_alt,
-            'LEFT_SHIFT': imgui.Key.left_shift,
-            'RIGHT_SHIFT': imgui.Key.right_shift,
-            'OSKEY': imgui.Key.comma,
+            'TAB': imgui.KEY_TAB,
+            'LEFT_ARROW': imgui.KEY_LEFT_ARROW,
+            'RIGHT_ARROW': imgui.KEY_RIGHT_ARROW,
+            'UP_ARROW': imgui.KEY_UP_ARROW,
+            'DOWN_ARROW': imgui.KEY_DOWN_ARROW,
+            'HOME': imgui.KEY_HOME,
+            'END': imgui.KEY_END,
+            'INSERT': imgui.KEY_INSERT,
+            'DEL': imgui.KEY_DELETE,
+            'BACK_SPACE': imgui.KEY_BACKSPACE,
+            'SPACE': imgui.KEY_SPACE,
+            'RET': imgui.KEY_ENTER,
+            'ESC': imgui.KEY_ESCAPE,
+            'PAGE_UP': imgui.KEY_PAGE_UP,
+            'PAGE_DOWN': imgui.KEY_PAGE_DOWN,
+            'A': imgui.KEY_A,
+            'C': imgui.KEY_C,
+            'V': imgui.KEY_V,
+            'X': imgui.KEY_X,
+            'Y': imgui.KEY_Y,
+            'Z': imgui.KEY_Z,
+            'LEFT_CTRL': imgui.KEY_MOD_CTRL,
+            'RIGHT_CTRL': imgui.KEY_MOD_CTRL,
+            'LEFT_ALT': imgui.KEY_MOD_ALT,
+            'RIGHT_ALT': imgui.KEY_MOD_ALT,
+            'LEFT_SHIFT': imgui.KEY_MOD_SHIFT,
+            'RIGHT_SHIFT': imgui.KEY_MOD_SHIFT,
+            # 'OSKEY': imgui.OSKEY_OSKEY,
         }
 
         # 根据事件类型更新 ImGui 的键盘状态

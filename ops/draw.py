@@ -21,10 +21,11 @@ from ..utils import get_pref
 class Draw:
 
     def draw_imgui(self, context):
-        from imgui_bundle import imgui
+        import imgui
         if self.draw_error:
             return
         self.create_context(context)
+        # with imgui.push_style_color()
         imgui.push_style_var(imgui.StyleVar_.window_rounding.value, 10)
         imgui.push_style_var(imgui.StyleVar_.window_border_size.value, 0)
 
@@ -34,10 +35,10 @@ class Draw:
         self.start_window(context)
 
         try:
-            if self.show_test:
-                imgui.show_demo_window()
+            # if self.show_test:
+            imgui.show_demo_window()
 
-            self.draw_color_picker(context)
+            # self.draw_color_picker(context)
             self.window_position = imgui.get_window_pos()
 
         except Exception as e:

@@ -22,7 +22,7 @@ class ImguiEvent:
 
     def create_context(self, context):
         from .render import Renderer
-        from imgui_bundle import imgui
+        import imgui
         if self.imgui_context is None:
             self.imgui_context = imgui.create_context()
             self.imgui_backend = Renderer()
