@@ -6,8 +6,6 @@ def get_pref():
 
 
 def get_tool_prop(context):
-    """bpy.data.scenes["Scene"].tool_settings.unified_paint_settings.color
-    """
     mode = context.object.mode
     tool_settings = context.tool_settings
     if mode == "PAINT_GREASE_PENCIL":
@@ -19,7 +17,6 @@ def get_tool_prop(context):
 
 
 def get_brush(context):
-    """    """
     mode = context.object.mode
     tool_settings = context.tool_settings
     if mode == "VERTEX_PAINT":  # 在顶点绘制模式下
