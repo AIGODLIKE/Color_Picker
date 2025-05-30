@@ -2,7 +2,9 @@ A color picker that conforms to painting habits (such as SAI/CSP)
 More friendly color choices
 
 1.Triangular and square color wheels
+
 2.Support color selection history, which will be recorded in the file
+
 3.Support controlling brush size and strength
 
 ![image](https://github.com/user-attachments/assets/0580f718-2521-476c-abfc-598ef7f845a3)
