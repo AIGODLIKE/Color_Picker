@@ -1,6 +1,6 @@
 from . import preferences, ops, keymap
 bl_info = {
-    "name": "Color Picker",
+    "name": "Color Picker Pro",
     "author": "AIGODLIKE Community, Cupcko <649730016@qq.com>, 小萌新",
     "version": (1, 0, 6),
     "blender": (4, 0, 0),
