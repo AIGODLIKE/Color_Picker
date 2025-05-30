@@ -1,3 +1,14 @@
+A color picker that conforms to painting habits (such as SAI/CSP)
+More friendly color choices
+
+1.Triangular and square color wheels
+2.Support color selection history, which will be recorded in the file
+3.Support controlling brush size and strength
+
+![image](https://github.com/user-attachments/assets/0580f718-2521-476c-abfc-598ef7f845a3)
+
+![image](https://github.com/user-attachments/assets/df6d6d2c-799f-4a89-a1fa-8a49ec868b35)
+
 ```
 pip download imgui --dest ./wheels --only-binary=:all: --python-version=3.11 --platform=macosx_11_0_arm64
 pip download imgui --dest ./wheels --only-binary=:all: --python-version=3.11 --platform=linux_2_28_x86_64
