@@ -21,6 +21,6 @@ copyright = [
 ]
 
 wheels = [
-#    "./wheels/imgui-2.0.0-cp311-cp311-win_amd64.whl",
-    "./wheels/slimgui-0.3.0-cp311-cp311-win_amd64.whl",
+    "./wheels/imgui-2.0.0-cp311-cp311-win_amd64.whl",
+    #    "./wheels/slimgui-0.3.0-cp311-cp311-win_amd64.whl",
 ]
