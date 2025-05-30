@@ -11,6 +11,7 @@ More friendly color choices
 
 ![image](https://github.com/user-attachments/assets/ee8a8eb7-2c81-42a4-8f55-6af70306e195)
 
+![image](https://github.com/user-attachments/assets/8844fe92-f891-4470-a90b-593dd5cbca93)
 
 Dev lib
 ```
