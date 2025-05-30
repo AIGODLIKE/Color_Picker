@@ -9,7 +9,7 @@ More friendly color choices
 
 ![image](https://github.com/user-attachments/assets/0580f718-2521-476c-abfc-598ef7f845a3)
 
-![image](https://github.com/user-attachments/assets/df6d6d2c-799f-4a89-a1fa-8a49ec868b35)
+![image](https://github.com/user-attachments/assets/ee8a8eb7-2c81-42a4-8f55-6af70306e195)
 
 
 Dev lib
