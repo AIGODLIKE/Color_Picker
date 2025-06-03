@@ -259,7 +259,7 @@ class ColorWidget:
             gc.color_edit_saved_sat = s
             gc.color_edit_saved_id = gc.color_edit_current_id
             gc.color_edit_saved_color = imgui.color_convert_float4_to_u32(
-                imgui.ImVec4(color[0], color[1], color[2], 0.0))
+                imgui.Vec4(color[0], color[1], color[2], 0.0))
 
         if value_changed:
             r = color[0]
@@ -268,25 +268,25 @@ class ColorWidget:
             h, s, v = imgui.color_convert_rgb_to_hsv(r, g, b, h, s, v)
             h, s, v = color_edit_restore_hs(color, h, s, v)
 
-        col_black = imgui.color_convert_float4_to_u32(imgui.ImVec4(0.0, 0.0, 0.0, 1.0))
-        col_white = imgui.color_convert_float4_to_u32(imgui.ImVec4(1.0, 1.0, 1.0, 1.0))
-        col_midgrey = imgui.color_convert_float4_to_u32(imgui.ImVec4(0.5, 0.5, 0.5, 0.0))
+        col_black = imgui.color_convert_float4_to_u32(imgui.Vec4(0.0, 0.0, 0.0, 1.0))
+        col_white = imgui.color_convert_float4_to_u32(imgui.Vec4(1.0, 1.0, 1.0, 1.0))
+        col_midgrey = imgui.color_convert_float4_to_u32(imgui.Vec4(0.5, 0.5, 0.5, 0.0))
         col_hues = [
-            imgui.get_color_u32(imgui.ImVec4(255, 0, 0, 255)),  # 红色
-            imgui.get_color_u32(imgui.ImVec4(255, 255, 0, 255)),  # 黄色
-            imgui.get_color_u32(imgui.ImVec4(0, 255, 0, 255)),  # 绿色
-            imgui.get_color_u32(imgui.ImVec4(0, 255, 255, 255)),  # 青色
-            imgui.get_color_u32(imgui.ImVec4(0, 0, 255, 255)),  # 蓝色
-            imgui.get_color_u32(imgui.ImVec4(255, 0, 255, 255)),  # 品红
-            imgui.get_color_u32(imgui.ImVec4(255, 0, 0, 255))  # 红色(再次出现以闭合色环)
+            imgui.get_color_u32(imgui.Vec4(255, 0, 0, 255)),  # 红色
+            imgui.get_color_u32(imgui.Vec4(255, 255, 0, 255)),  # 黄色
+            imgui.get_color_u32(imgui.Vec4(0, 255, 0, 255)),  # 绿色
+            imgui.get_color_u32(imgui.Vec4(0, 255, 255, 255)),  # 青色
+            imgui.get_color_u32(imgui.Vec4(0, 0, 255, 255)),  # 蓝色
+            imgui.get_color_u32(imgui.Vec4(255, 0, 255, 255)),  # 品红
+            imgui.get_color_u32(imgui.Vec4(255, 0, 0, 255))  # 红色(再次出现以闭合色环)
         ]
 
-        hue_color_f = imgui.ImVec4(1, 1, 1, 1)
+        hue_color_f = imgui.Vec4(1, 1, 1, 1)
         rgb = imgui.color_convert_hsv_to_rgb(h, 1, 1, hue_color_f.x, hue_color_f.y, hue_color_f.z)
-        hue_color_f = imgui.ImVec4(*rgb, 1)
+        hue_color_f = imgui.Vec4(*rgb, 1)
 
         hue_color32 = imgui.color_convert_float4_to_u32(hue_color_f)
-        user_col32_striped_of_alpha = imgui.color_convert_float4_to_u32(imgui.ImVec4(r, g, b, 1))
+        user_col32_striped_of_alpha = imgui.color_convert_float4_to_u32(imgui.Vec4(r, g, b, 1))
 
         # 圆环
         aeps = 0.5 / wheel_r_outer
@@ -371,13 +371,13 @@ class ColorWidget:
             h, s, v = self.start_hsv
 
             col_hues = [
-                imgui.get_color_u32(imgui.ImVec4(1, 0, 0, 1)),  # 红色
-                imgui.get_color_u32(imgui.ImVec4(1, 1, 0, 1)),  # 黄色
-                imgui.get_color_u32(imgui.ImVec4(0, 1, 0, 1)),  # 绿色
-                imgui.get_color_u32(imgui.ImVec4(0, 1, 1, 1)),  # 青色
-                imgui.get_color_u32(imgui.ImVec4(0, 0, 1, 1)),  # 蓝色
-                imgui.get_color_u32(imgui.ImVec4(1, 0, 1, 1)),  # 品红
-                imgui.get_color_u32(imgui.ImVec4(1, 0, 0, 1))  # 红色(再次出现以闭合色环)
+                imgui.get_color_u32_rgba(1, 0, 0, 1),  # 红色
+                imgui.get_color_u32_rgba(1, 1, 0, 1),  # 黄色
+                imgui.get_color_u32_rgba(0, 1, 0, 1),  # 绿色
+                imgui.get_color_u32_rgba(0, 1, 1, 1),  # 青色
+                imgui.get_color_u32_rgba(0, 0, 1, 1),  # 蓝色
+                imgui.get_color_u32_rgba(1, 0, 1, 1),  # 品红
+                imgui.get_color_u32_rgba(1, 0, 0, 1)  # 红色(再次出现以闭合色环)
             ]
             for c in range(6):
                 segment = gradient_size[0] / 6
@@ -388,21 +388,21 @@ class ColorWidget:
                     start = p0[0] - 2
                 else:
                     start = p0[0]
-                imgui.get_window_draw_list().add_rect_filled_multi_color(
-                    imgui.ImVec2(start + c * segment, p0[1]),
-                    imgui.ImVec2(start + (c + 1) * segment, p1[1]),
+                imgui.get_window_draw_list().add_rect_filled_multicolor(
+                    imgui.Vec2(start + c * segment, p0[1]),
+                    imgui.Vec2(start + (c + 1) * segment, p1[1]),
                     col_hues[c], col_hues[c + 1], col_hues[c + 1],
                     col_hues[c])
             imgui.get_window_draw_list().add_line(
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * h, p0[1] - 3),
-                imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * h, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
+                imgui.Vec2(p0[0] + 2 + (gradient_size[0] - 5) * h, p0[1] - 3),
+                imgui.Vec2(p0[0] + 2 + (gradient_size[0] - 5) * h, p1[1] + 1),
+                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
                 4
             )
             imgui.get_window_draw_list().add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * h, p0[1] - 2),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * h, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
+                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
                 2
             )
 
@@ -429,13 +429,13 @@ class ColorWidget:
             imgui.get_window_draw_list().add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * s, p0[1] - 3),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * s, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
+                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
                 4
             )
             imgui.get_window_draw_list().add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * s, p0[1] - 2),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * s, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
+                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
                 2
             )
             changed, s = imgui.slider_float("S ", s, 0.0, 1.0, "", ImGuiSliderFlags_flags=imgui.SLIDER_FLAGS_NO_INPUT)
@@ -461,13 +461,13 @@ class ColorWidget:
             imgui.get_window_draw_list().add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * v, p0[1] - 3),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * v, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
+                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
                 4
             )
             imgui.get_window_draw_list().add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * v, p0[1] - 2),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * v, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
+                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
                 2
             )
             changed, v = imgui.slider_float("V", v, 0.0, 1.0, "", ImGuiSliderFlags_flags=imgui.SLIDER_FLAGS_NO_INPUT)
@@ -488,24 +488,24 @@ class ColorWidget:
             draw_list.add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                   imgui.ImVec2(p1[0] - 2, p1[1]),
                                                   imgui.color_convert_float4_to_u32(
-                                                      imgui.ImVec4(0, g, b, 1.0)),
+                                                      0, g, b, 1.0),
                                                   imgui.color_convert_float4_to_u32(
-                                                      imgui.ImVec4(1, g, b, 1.0)),
+                                                      1, g, b, 1.0),
                                                   imgui.color_convert_float4_to_u32(
-                                                      imgui.ImVec4(1, g, b, 1.0)),
+                                                      1, g, b, 1.0),
                                                   imgui.color_convert_float4_to_u32(
-                                                      imgui.ImVec4(0, g, b, 1.0)),
+                                                      0, g, b, 1.0),
                                                   )
             draw_list.add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * r, p0[1] - 3),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * r, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
+                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
                 4
             )
             draw_list.add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * r, p0[1] - 2),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * r, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
+                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
                 2
             )
             changed, r = imgui.slider_float("R ", r, 0.0, 1.0, "", ImGuiSliderFlags_flags=imgui.SLIDER_FLAGS_NO_INPUT)
@@ -523,24 +523,24 @@ class ColorWidget:
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
                                                                      imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(r, 0, b, 1.0)),
+                                                                         r, 0, b, 1.0),
                                                                      imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(r, 1, b, 1.0)),
+                                                                         r, 1, b, 1.0),
                                                                      imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(r, 1, b, 1.0)),
+                                                                         r, 1, b, 1.0),
                                                                      imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(r, 0, b, 1.0)),
+                                                                         r, 0, b, 1.0),
                                                                      )
             imgui.get_window_draw_list().add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * g, p0[1] - 3),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * g, p1[1] + 1),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
+                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
                 4
             )
             imgui.get_window_draw_list().add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * g, p0[1] - 2),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * g, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
+                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
                 2
             )
             changed, g = imgui.slider_float("G ", g, 0.0, 1.0, "", ImGuiSliderFlags_flags=imgui.SLIDER_FLAGS_NO_INPUT)
@@ -560,23 +560,23 @@ class ColorWidget:
             imgui.get_window_draw_list().add_rect_filled_multi_color(imgui.ImVec2(p0[0] + 2, p0[1]),
                                                                      imgui.ImVec2(p1[0] - 2, p1[1]),
                                                                      imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(r, g, 0, 1.0)),
+                                                                         r, g, 0, 1.0),
                                                                      imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(r, g, 1, 1.0)),
+                                                                         r, g, 1, 1.0),
                                                                      imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(r, g, 1, 1.0)),
+                                                                         r, g, 1, 1.0),
                                                                      imgui.color_convert_float4_to_u32(
-                                                                         imgui.ImVec4(r, g, 0, 1.0)),
+                                                                         r, g, 0, 1.0),
                                                                      )
             imgui.get_window_draw_list().add_line(imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * b, p0[1] - 3),
                                                   imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * b, p1[1] + 1),
-                                                  imgui.color_convert_float4_to_u32(imgui.ImVec4(0.2, 0.2, 0.2, 1.0)),
+                                                  imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
                                                   4
                                                   )
             imgui.get_window_draw_list().add_line(
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * b, p0[1] - 2),
                 imgui.ImVec2(p0[0] + 2 + (gradient_size[0] - 5) * b, p1[1]),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.9, 0.9, 0.9, 1.0)),
+                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.),
                 2
             )
             changed, b = imgui.slider_float("B ", b, 0.0, 1.0, "", ImGuiSliderFlags_flags=imgui.SLIDER_FLAGS_NO_INPUT )
@@ -598,9 +598,9 @@ class ColorWidget:
         imgui.set_cursor_pos(start_pos)
         size = 20
         center = imgui.ImVec2(pos.x + size / 2, pos.y + size / 2)
-        imgui.push_style_color(21, imgui.ImVec4(0, 0, 0, 0.1))
-        imgui.push_style_color(22, imgui.ImVec4(0, 0, 0, 0.1))
-        imgui.push_style_color(23, imgui.ImVec4(0, 0, 0, 0.1))
+        imgui.push_style_color(21, 0, 0, 0, 0.1)
+        imgui.push_style_color(22, 0, 0, 0, 0.1)
+        imgui.push_style_color(23, 0, 0, 0, 0.1)
 
         pref = get_pref()
         # 绘制按钮
@@ -616,13 +616,13 @@ class ColorWidget:
                 imgui.ImVec2(position[0] + size, position[1] + size),
                 imgui.ImVec2(position[0] - size, position[1] + size),
                 imgui.ImVec2(position[0], position[1] - size),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
+                imgui.color_convert_float4_to_u32(0.6, .6, .6, 0.05)
             )
         else:
             draw_list.add_rect_filled(
                 imgui.ImVec2(position[0] - size, position[1] - size),
                 imgui.ImVec2(position[0] + size, position[1] + size),
-                imgui.color_convert_float4_to_u32(imgui.ImVec4(0.6, .6, .6, 0.05))
+                imgui.color_convert_float4_to_u32(0.6, .6, .6, 0.05)
             )
 
     def draw_brush_size(self):
