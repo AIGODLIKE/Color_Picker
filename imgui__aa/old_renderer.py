@@ -6,12 +6,12 @@ import numpy as np
 from gpu_extras.batch import batch_for_shader
 
 try:
-    from imgui_bundle import imgui
+    import imgui
 except ModuleNotFoundError:
     print("ERROR: imgui was not found")
 
-# from imgui.integrations.base import BaseOpenGLRenderer
-from imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
+from imgui.integrations.base import BaseOpenGLRenderer
+# from imgui_bundle.python_backends.base_backend import BaseOpenGLRenderer
 
 
 class Renderer340(BaseOpenGLRenderer):

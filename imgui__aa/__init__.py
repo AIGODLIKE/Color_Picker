@@ -1,3 +1,5 @@
+import bpy
+
 def sync_key(self, context: bpy.types.Context, event: bpy.types.Event):
     from imgui_bundle import imgui
     io = imgui.get_io()

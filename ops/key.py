@@ -14,17 +14,17 @@ class SyncKey:
         io.mouse_pos = (x, y)
 
         if event_type == 'LEFTMOUSE':
-            io.add_mouse_button_event(0, is_press)
+            io.mouse_down[0] = is_press
             if not is_press:
                 self.add_palettes_color(context, self.start_color)
         elif event_type == 'RIGHTMOUSE':
-            io.add_mouse_button_event(1, is_press)
+            io.mouse_down[1] = is_press
         elif event_type == 'MIDDLEMOUSE':
-            io.add_mouse_button_event(2, is_press)
+            io.mouse_down[2] = is_press
         elif event_type == 'WHEELUPMOUSE':
-            io.add_mouse_wheel_event(0, 1)
+            io.mouse_wheel = 1
         elif event_type == 'WHEELDOWNMOUSE':
-            io.add_mouse_wheel_event(0, -1)
+            io.mouse_wheel = -1
         elif event_type == "F12" and is_press:
             self.show_test = not self.show_test
 
@@ -76,5 +76,5 @@ class SyncKey:
         # 根据事件类型更新 ImGui 的键盘状态
         if event_type in key_map:
             k = key_map[event_type]
-            io.add_key_event(k, is_press)
-            # io.add_input_character(k)
+            # io.add_key_event(k, is_press)
+            io.add_input_character(k)

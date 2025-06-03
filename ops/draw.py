@@ -26,8 +26,13 @@ class Draw:
             return
         self.create_context(context)
         # with imgui.push_style_color()
-        imgui.push_style_var(imgui.StyleVar_.window_rounding.value, 10)
-        imgui.push_style_var(imgui.StyleVar_.window_border_size.value, 0)
+        # from ..imgui__aa.testwindow import show_test_window
+        # show_test_window()
+        # return
+
+
+        imgui.push_style_var(imgui.STYLE_WINDOW_ROUNDING, 10)
+        imgui.push_style_var(imgui.STYLE_WINDOW_BORDERSIZE, 0)
 
         imgui.get_io().display_size = (context.region.width, context.region.height)
         imgui.new_frame()
@@ -36,10 +41,11 @@ class Draw:
 
         try:
             # if self.show_test:
-            imgui.show_demo_window()
+            # imgui.show_demo_window()
 
             # self.draw_color_picker(context)
-            self.window_position = imgui.get_window_pos()
+            self.window_position = imgui.get_window_position()
+            imgui.text("AAA")
 
         except Exception as e:
             import traceback
@@ -55,41 +61,39 @@ class Draw:
         self.imgui_backend.render(imgui.get_draw_data())
 
     def start_window(self, context):
-        from imgui_bundle import imgui
+        import imgui
 
-        flags = imgui.WindowFlags_
         window_flags = (
-                flags.no_title_bar |
-                flags.no_resize |
-                flags.always_auto_resize |
-                flags.no_scrollbar
-            # flags.no_scroll_with_mouse
+                # imgui.WINDOW_NO_TITLE_BAR |
+                # imgui.WINDOW_NO_RESIZE |
+                # imgui.WINDOW_ALWAYS_AUTO_RESIZE |
+                imgui.WINDOW_NO_SCROLLBAR
+            # imgui.WINDOW_NO_SCROLL_WITH_MOUSE
         )
         window_name = "Main Window"
 
-        imgui.begin(window_name, False, window_flags)
+        imgui.begin(window_name)
         # imgui.set_window_focus(window_name)
 
-        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y)
+        start_pos = imgui.Vec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y)
         imgui.set_cursor_pos(start_pos)
 
     def start_window_pos(self, context):
-        from imgui_bundle import imgui
+        import imgui
         if self.window_position is None:
             x, y = self.mouse
             x, y = x - 50 - imgui.get_style().indent_spacing * 0.5, context.region.height - y - 129 - 10
-            pos = imgui.ImVec2((x, y))
-            imgui.set_next_window_pos(pos)
+            imgui.set_next_window_position(x, y)
 
     def draw_color_picker(self, context):
-        from imgui_bundle import imgui
+        import imgui
         imgui.begin_horizontal("draw_color_picker")
         self.draw_left(context)
         self.draw_right(context)
         imgui.end_horizontal()
 
     def draw_left(self, context):
-        from imgui_bundle import imgui
+        import imgui
         imgui.begin_vertical("Left")
 
         start_pos = imgui.get_cursor_pos()
@@ -101,7 +105,7 @@ class Draw:
         imgui.end_vertical()
 
     def draw_right(self, context):
-        from imgui_bundle import imgui
+        import imgui
 
         imgui.begin_group()
         imgui.begin_vertical("Right")
@@ -116,7 +120,7 @@ class Draw:
         imgui.end_group()
 
     def draw_hsv_rgb(self):
-        from imgui_bundle import imgui
+        import imgui
         imgui.begin_group()
         self.draw_h_bar()
         self.draw_s_bar()
@@ -151,7 +155,7 @@ class Draw:
         color_palette('##color_palette', color, self.backup_color, self.pre_color, self.color_palette)
         imgui.end_group()
         picker_switch_button(' ##1')
-        start_pos = imgui.ImVec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y - 15)
+        start_pos = imgui.Vec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y - 15)
         imgui.set_cursor_pos(start_pos)
         imgui.text('')
         # imgui.show_demo_window()
