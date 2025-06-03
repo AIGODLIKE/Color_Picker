@@ -40,10 +40,10 @@ class Draw:
         self.start_window(context)
 
         try:
-            # if self.show_test:
-            # imgui.show_demo_window()
+            if self.show_test:
+                imgui.show_demo_window()
 
-            # self.draw_color_picker(context)
+            self.draw_color_picker(context)
             self.window_position = imgui.get_window_position()
             imgui.text("AAA")
 
@@ -87,36 +87,33 @@ class Draw:
 
     def draw_color_picker(self, context):
         import imgui
-        imgui.begin_horizontal("draw_color_picker")
+        imgui.same_line()
+
         self.draw_left(context)
         self.draw_right(context)
-        imgui.end_horizontal()
 
     def draw_left(self, context):
         import imgui
-        imgui.begin_vertical("Left")
-
-        start_pos = imgui.get_cursor_pos()
-        self.draw_switch_button()
-        imgui.set_cursor_pos(start_pos)
-        self.draw_color_picker_wheel(get_pref().picker_switch)
-        # self.draw_demo_vertial_scrolling()
-
-        imgui.end_vertical()
+        with imgui.begin("Left"):
+            start_pos = imgui.get_cursor_pos()
+            # self.draw_switch_button()
+            # imgui.set_cursor_pos(start_pos)
+            # self.draw_color_picker_wheel(get_pref().picker_switch)
+            # self.draw_demo_vertial_scrolling()
 
     def draw_right(self, context):
         import imgui
 
         imgui.begin_group()
-        imgui.begin_vertical("Right")
-        self.draw_hsv_rgb()
 
+        self.draw_hsv_rgb()
+        imgui.same_line()
         self.draw_brush_size()
+        imgui.same_line()
         self.draw_brush_strength()
+        imgui.same_line()
         self.draw_palettes()
 
-
-        imgui.end_vertical()
         imgui.end_group()
 
     def draw_hsv_rgb(self):
