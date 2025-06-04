@@ -94,7 +94,7 @@ class Draw:
 
     def draw_left(self, context):
         import imgui
-        with imgui.begin("Left"):
+        with imgui.begin_group():
             start_pos = imgui.get_cursor_pos()
             # self.draw_switch_button()
             # imgui.set_cursor_pos(start_pos)
@@ -104,28 +104,22 @@ class Draw:
     def draw_right(self, context):
         import imgui
 
-        imgui.begin_group()
+        with imgui.begin_group():
+            self.draw_hsv_rgb()
+            self.draw_brush_size()
+            self.draw_brush_strength()
+            self.draw_palettes()
 
-        self.draw_hsv_rgb()
-        imgui.same_line()
-        # self.draw_brush_size()
-        # imgui.same_line()
-        # self.draw_brush_strength()
-        # imgui.same_line()
-        # self.draw_palettes()
-
-        imgui.end_group()
 
     def draw_hsv_rgb(self):
         import imgui
-        imgui.begin_group()
-        self.draw_h_bar()
-        self.draw_s_bar()
-        self.draw_v_bar()
-        self.draw_r_bar()
-        self.draw_g_bar()
-        self.draw_b_bar()
-        imgui.end_group()
+        with imgui.begin_group():
+            self.draw_h_bar()
+            self.draw_s_bar()
+            self.draw_v_bar()
+            self.draw_r_bar()
+            self.draw_g_bar()
+            self.draw_b_bar()
 
     def old(self, context):
         colorpicker_changed, picker_pos, picker_pos2, wheel_center = colorpicker('##aa', color, misc_flags, self)
