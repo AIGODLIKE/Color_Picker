@@ -108,11 +108,11 @@ class Draw:
 
         self.draw_hsv_rgb()
         imgui.same_line()
-        self.draw_brush_size()
-        imgui.same_line()
-        self.draw_brush_strength()
-        imgui.same_line()
-        self.draw_palettes()
+        # self.draw_brush_size()
+        # imgui.same_line()
+        # self.draw_brush_strength()
+        # imgui.same_line()
+        # self.draw_palettes()
 
         imgui.end_group()
 
@@ -120,11 +120,11 @@ class Draw:
         import imgui
         imgui.begin_group()
         self.draw_h_bar()
-        # self.draw_s_bar()
-        # self.draw_v_bar()
-        # self.draw_r_bar()
-        # self.draw_g_bar()
-        # self.draw_b_bar()
+        self.draw_s_bar()
+        self.draw_v_bar()
+        self.draw_r_bar()
+        self.draw_g_bar()
+        self.draw_b_bar()
         imgui.end_group()
 
     def old(self, context):
