@@ -15,8 +15,6 @@ Color_Picker_Imgui_options_menu = True
 Color_Picker_Imgui_hdr = False
 import copy
 
-from ..utils import get_pref
-
 
 class Draw:
 
@@ -64,15 +62,14 @@ class Draw:
         import imgui
 
         window_flags = (
-                # imgui.WINDOW_NO_TITLE_BAR |
+                imgui.WINDOW_NO_TITLE_BAR |
                 # imgui.WINDOW_NO_RESIZE |
                 # imgui.WINDOW_ALWAYS_AUTO_RESIZE |
                 imgui.WINDOW_NO_SCROLLBAR
             # imgui.WINDOW_NO_SCROLL_WITH_MOUSE
         )
         window_name = "Main Window"
-
-        imgui.begin(window_name)
+        imgui.begin(window_name, False, window_flags)
         # imgui.set_window_focus(window_name)
 
         start_pos = imgui.Vec2(imgui.get_cursor_pos().x, +imgui.get_cursor_pos().y)
@@ -84,6 +81,7 @@ class Draw:
             x, y = self.mouse
             x, y = x - 50 - imgui.get_style().indent_spacing * 0.5, context.region.height - y - 129 - 10
             imgui.set_next_window_position(x, y)
+            imgui.set_next_window_size(500, 300)
 
     def draw_color_picker(self, context):
         import imgui

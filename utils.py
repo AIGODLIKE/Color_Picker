@@ -6,9 +6,6 @@ def get_pref():
 
 
 def get_tool_prop(context):
-    """bpy.data.scenes["Scene"].tool_settings.unified_paint_settings.color
-    # bpy.data.scenes["Scene"].tool_settings.unified_paint_settings.color
-    """
     tool_settings = context.tool_settings
     if unified_paint_settings := getattr(tool_settings, "unified_paint_settings"):
         return unified_paint_settings
@@ -16,10 +13,6 @@ def get_tool_prop(context):
 
 
 def get_brush(context):
-    """
-    bpy.data.brushes["Paint Hard", "C:\\Program Files\\Blender Foundation\\Blender 4.4\\4.4\\datafiles\\assets\\brushes\\essentials_brushes-mesh_sculpt.blend"].strength
-    bpy.data.brushes["Average", "C:\\Program Files\\Blender Foundation\\Blender 4.4\\4.4\\datafiles\\assets\\brushes\\essentials_brushes-mesh_weight.blend"].strength
-    """
     mode = context.object.mode
     tool_settings = context.tool_settings
     if mode == "VERTEX_PAINT":  # 在顶点绘制模式下
@@ -51,3 +44,9 @@ def get_brush(context):
         brush = tool_settings.gpencil_paint.brush
         return brush
     return None
+
+
+def rgb_to_hex(rgb):
+    """将 RGB 元组 (0-1范围) 转换为十六进制字符串"""
+    return f"#{int(rgb[0] * 255):02X}{int(rgb[1] * 255):02X}{int(rgb[2] * 255):02X}"
+

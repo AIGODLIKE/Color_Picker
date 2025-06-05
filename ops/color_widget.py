@@ -3,6 +3,8 @@ import math
 import bpy
 from mathutils import Color
 
+from ..utils import rgb_to_hex
+
 color_edit_active_component = None
 
 
@@ -87,7 +89,7 @@ def convert_hsv2rgb32_color3(h, s, v):
 
 class ColorBar:
     """颜色条"""
-    slider_width = 256
+    slider_width = 1000
 
     def __init__(self, draw_func):
         self.draw_func = draw_func
@@ -96,22 +98,32 @@ class ColorBar:
     def draw(self):
         import imgui
 
-        imgui.begin_group()
-        # imgui.set_next_item_width(self.slider_width)
+        with imgui.begin_group():
+            imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND, 1 / 7.0, 0.6, 1, 0)
+            imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND_HOVERED, 1 / 7.0, .7, 1, 0)
+            imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND_ACTIVE, 1.0, 1.0, 1.0, 0)
+            imgui.push_style_color(imgui.COLOR_SLIDER_GRAB, 0.9, 0.9, 0.9, 0.0)
+            imgui.push_style_color(imgui.COLOR_SLIDER_GRAB_ACTIVE, 0.9, 0.9, 0.9, 0.0)
 
-        imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND, 1 / 7.0, 0.6, 1, 0)
-        imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND_HOVERED, 1 / 7.0, .7, 1, 0)
-        imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND_ACTIVE, 1.0, 1.0, 1.0, 0)
-        imgui.push_style_color(imgui.COLOR_SLIDER_GRAB, 0.9, 0.9, 0.9, 0.0)
-        imgui.push_style_color(imgui.COLOR_SLIDER_GRAB_ACTIVE, 0.9, 0.9, 0.9, 0.0)
-        gradient_size = [imgui.calculate_item_width(), 20]
+            gradient_size = [imgui.calculate_item_width(), 20]
 
-        p0 = imgui.get_cursor_screen_pos()
-        p1 = (p0.x + gradient_size[0], p0.y + gradient_size[1])
-        self.draw_func(p0, p1)
+            start_pos = imgui.get_cursor_pos()
+            p0 = imgui.get_cursor_screen_pos()
+            p1 = p0.x + gradient_size[0], p0.y + gradient_size[1]
 
-        imgui.pop_style_color(5)
-        imgui.end_group()
+            value = self.draw_func(p0, p1)
+
+            x1 = p0[0] + gradient_size[0] * value
+            x2 = p0[0] + gradient_size[0] * value
+            y1, y2 = p0[1] - 1, p1[1] - 1
+            color_a = imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0)
+            color_b = imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0)
+            imgui.set_cursor_pos(start_pos)
+            imgui.get_window_draw_list().add_line(x1, y1, x2, y2, color_a, 4)
+            imgui.set_cursor_pos(start_pos)
+            imgui.get_window_draw_list().add_line(x1, y1, x2, y2, color_b, 2)
+
+            imgui.pop_style_color(5)
 
 
 class ColorWidget:
@@ -367,7 +379,6 @@ class ColorWidget:
         import imgui
 
         def draw(p0, p1):
-            gradient_size = [imgui.calculate_item_width(), 20]
             h, s, v = self.start_hsv
 
             col_hues = [
@@ -379,15 +390,10 @@ class ColorWidget:
                 imgui.get_color_u32_rgba(1, 0, 1, 1),  # 品红
                 imgui.get_color_u32_rgba(1, 0, 0, 1)  # 红色(再次出现以闭合色环)
             ]
+
+            segment = imgui.calculate_item_width() / 6
             for c in range(6):
-                segment = gradient_size[0] / 6
-                # 偏移两端
-                if c == 0:
-                    start = p0[0] + 2
-                elif c == 5:
-                    start = p0[0] - 2
-                else:
-                    start = p0[0]
+                start = p0[0]
                 imgui.get_window_draw_list().add_rect_filled_multicolor(
                     start + c * segment, p0[1],
                     start + (c + 1) * segment, p1[1],
@@ -395,88 +401,50 @@ class ColorWidget:
                     col_hues[c + 1],
                     col_hues[c + 1],
                     col_hues[c])
-            imgui.get_window_draw_list().add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * h, p0[1] - 3,
-                p0[0] + 2 + (gradient_size[0] - 5) * h, p1[1] + 1,
-                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
-                4
-            )
-            imgui.get_window_draw_list().add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * h, p0[1] - 2,
-                p0[0] + 2 + (gradient_size[0] - 5) * h, p1[1],
-                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
-                2
-            )
-
             changed, h = imgui.slider_float("H ", h, 0.0, 1.0, "", imgui.SLIDER_FLAGS_NO_INPUT)
             if changed:
                 self.set_hsv(bpy.context, h, s, v)
                 self.start_hsv = (h, s, v)
-
+            return h
         ColorBar(draw)
 
     def draw_s_bar(self):
         import imgui
 
         def draw(p0, p1):
-            gradient_size = [imgui.calculate_item_width(), 20]
             h, s, v = self.start_hsv
-            imgui.get_window_draw_list().add_rect_filled_multicolor(p0[0] + 2, p0[1],
-                                                                    p1[0] - 2, p1[1],
+            imgui.get_window_draw_list().add_rect_filled_multicolor(p0[0], p0[1],
+                                                                    p1[0], p1[1],
                                                                     convert_hsv2rgb32_color3(0, 0, v),
                                                                     convert_hsv2rgb32_color3(h, 1.0, v),
                                                                     convert_hsv2rgb32_color3(h, 1.0, v),
                                                                     convert_hsv2rgb32_color3(0, 0, v)
                                                                     )
-            imgui.get_window_draw_list().add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * s, p0[1] - 3,
-                p0[0] + 2 + (gradient_size[0] - 5) * s, p1[1] + 1,
-                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
-                4
-            )
-            imgui.get_window_draw_list().add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * s, p0[1] - 2,
-                p0[0] + 2 + (gradient_size[0] - 5) * s, p1[1],
-                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
-                2
-            )
             changed, s = imgui.slider_float("S ", s, 0.0, 1.0, "", imgui.SLIDER_FLAGS_NO_INPUT)
+
             if changed:
                 self.set_hsv(bpy.context, h, s, v)
                 self.start_hsv = (h, s, v)
-
+            return s
         ColorBar(draw)
 
     def draw_v_bar(self):
         import imgui
 
         def draw(p0, p1):
-            gradient_size = [imgui.calculate_item_width(), 20]
             h, s, v = self.start_hsv
-            imgui.get_window_draw_list().add_rect_filled_multicolor(p0[0] + 2, p0[1],
-                                                                    p1[0] - 2, p1[1],
+            imgui.get_window_draw_list().add_rect_filled_multicolor(p0[0], p0[1],
+                                                                    p1[0], p1[1],
                                                                     convert_hsv2rgb32_color3(0, 0, 0),
                                                                     convert_hsv2rgb32_color3(h, s, 1),
                                                                     convert_hsv2rgb32_color3(h, s, 1),
                                                                     convert_hsv2rgb32_color3(0, 0, 0)
                                                                     )
-            imgui.get_window_draw_list().add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * v, p0[1] - 3,
-                p0[0] + 2 + (gradient_size[0] - 5) * v, p1[1] + 1,
-                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
-                4
-            )
-            imgui.get_window_draw_list().add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * v, p0[1] - 2,
-                p0[0] + 2 + (gradient_size[0] - 5) * v, p1[1],
-                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
-                2
-            )
             changed, v = imgui.slider_float("V", v, 0.0, 1.0, "", imgui.SLIDER_FLAGS_NO_INPUT)
             if changed:
                 self.start_hsv = (h, s, v)
                 self.set_hsv(bpy.context, h, s, v)
-
+            return v
         ColorBar(draw)
 
     def draw_r_bar(self):
@@ -484,46 +452,27 @@ class ColorWidget:
 
         def draw(p0, p1):
             draw_list = imgui.get_window_draw_list()
-            gradient_size = [imgui.calculate_item_width(), 20]
             r, g, b = self.from_start_hsv_get_rgb()
 
-            draw_list.add_rect_filled_multicolor(p0[0] + 2, p0[1],
-                                                 p1[0] - 2, p1[1],
-                                                 imgui.color_convert_float4_to_u32(
-                                                     0, g, b, 1.0),
-                                                 imgui.color_convert_float4_to_u32(
-                                                     1, g, b, 1.0),
-                                                 imgui.color_convert_float4_to_u32(
-                                                     1, g, b, 1.0),
-                                                 imgui.color_convert_float4_to_u32(
-                                                     0, g, b, 1.0),
+            draw_list.add_rect_filled_multicolor(p0[0], p0[1], p1[0], p1[1],
+                                                 imgui.color_convert_float4_to_u32(0, g, b, 1.0),
+                                                 imgui.color_convert_float4_to_u32(1, g, b, 1.0),
+                                                 imgui.color_convert_float4_to_u32(1, g, b, 1.0),
+                                                 imgui.color_convert_float4_to_u32(0, g, b, 1.0),
                                                  )
-            draw_list.add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * r, p0[1] - 3,
-                p0[0] + 2 + (gradient_size[0] - 5) * r, p1[1] + 1,
-                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
-                4
-            )
-            draw_list.add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * r, p0[1] - 2,
-                p0[0] + 2 + (gradient_size[0] - 5) * r, p1[1],
-                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
-                2
-            )
             changed, r = imgui.slider_float("R ", r, 0.0, 1.0, "", imgui.SLIDER_FLAGS_NO_INPUT)
             if changed:
                 self.set_color(bpy.context, Color((r, g, b)), sync_to_hsv=True)
-
+            return r
         ColorBar(draw)
 
     def draw_g_bar(self):
         import imgui
 
         def draw(p0, p1):
-            gradient_size = [imgui.calculate_item_width(), 20]
             r, g, b = self.from_start_hsv_get_rgb()
-            imgui.get_window_draw_list().add_rect_filled_multicolor(p0[0] + 2, p0[1],
-                                                                    p1[0] - 2, p1[1],
+            imgui.get_window_draw_list().add_rect_filled_multicolor(p0[0], p0[1],
+                                                                    p1[0], p1[1],
                                                                     imgui.color_convert_float4_to_u32(
                                                                         r, 0, b, 1.0),
                                                                     imgui.color_convert_float4_to_u32(
@@ -533,34 +482,20 @@ class ColorWidget:
                                                                     imgui.color_convert_float4_to_u32(
                                                                         r, 0, b, 1.0),
                                                                     )
-            imgui.get_window_draw_list().add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * g, p0[1] - 3,
-                p0[0] + 2 + (gradient_size[0] - 5) * g, p1[1] + 1,
-                imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
-                4
-            )
-            imgui.get_window_draw_list().add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * g, p0[1] - 2,
-                p0[0] + 2 + (gradient_size[0] - 5) * g, p1[1],
-                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.0),
-                2
-            )
             changed, g = imgui.slider_float("G ", g, 0.0, 1.0, "", imgui.SLIDER_FLAGS_NO_INPUT)
-
             if changed:
                 self.set_color(bpy.context, Color((r, g, b)), sync_to_hsv=True)
-
+            return g
         ColorBar(draw)
 
     def draw_b_bar(self):
         import imgui
 
         def draw(p0, p1):
-            gradient_size = [imgui.calculate_item_width(), 20]
             r, g, b = self.from_start_hsv_get_rgb()
 
-            imgui.get_window_draw_list().add_rect_filled_multicolor(p0[0] + 2, p0[1],
-                                                                    p1[0] - 2, p1[1],
+            imgui.get_window_draw_list().add_rect_filled_multicolor(p0[0], p0[1],
+                                                                    p1[0], p1[1],
                                                                     imgui.color_convert_float4_to_u32(
                                                                         r, g, 0, 1.0),
                                                                     imgui.color_convert_float4_to_u32(
@@ -570,21 +505,10 @@ class ColorWidget:
                                                                     imgui.color_convert_float4_to_u32(
                                                                         r, g, 0, 1.0),
                                                                     )
-            imgui.get_window_draw_list().add_line(p0[0] + 2 + (gradient_size[0] - 5) * b, p0[1] - 3,
-                                                  p0[0] + 2 + (gradient_size[0] - 5) * b, p1[1] + 1,
-                                                  imgui.color_convert_float4_to_u32(0.2, 0.2, 0.2, 1.0),
-                                                  4
-                                                  )
-            imgui.get_window_draw_list().add_line(
-                p0[0] + 2 + (gradient_size[0] - 5) * b, p0[1] - 2,
-                p0[0] + 2 + (gradient_size[0] - 5) * b, p1[1],
-                imgui.color_convert_float4_to_u32(0.9, 0.9, 0.9, 1.),
-                2
-            )
             changed, b = imgui.slider_float("B ", b, 0.0, 1.0, "", imgui.SLIDER_FLAGS_NO_INPUT)
             if changed:
                 self.set_color(bpy.context, Color((r, g, b)), sync_to_hsv=True)
-
+            return b
         ColorBar(draw)
 
     @staticmethod
@@ -633,16 +557,15 @@ class ColorWidget:
 
         with imgui.begin_group():
             start_pos = imgui.get_cursor_pos()
-            start_ops = imgui.Vec2(start_pos.x + 2, start_pos.y + 1)
-            imgui.set_cursor_pos(start_ops)
+            imgui.set_cursor_pos(start_pos)
             imgui.push_style_color(imgui.COLOR_PLOT_HISTOGRAM, *(*color[:3], 1))
-            imgui.progress_bar(size / 500, (imgui.calculate_item_width() - 3, 20.0), overlay='R:{}'.format(size))
+            imgui.progress_bar(size / 500, (imgui.calculate_item_width(), 20.0), overlay='R:{}'.format(size))
             imgui.pop_style_color(1)
 
             imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND, 1 / 7.0, 0.6, 1, 0)
             imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND_HOVERED, 1 / 7.0, .7, 1, 0)
             imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND_ACTIVE, 1.0, 1.0, 1.0, 0)
-            imgui.set_cursor_pos(start_ops)
+            imgui.set_cursor_pos(start_pos)
 
             change, size = imgui.drag_float('##Size', size, 1, 1, 500, '', imgui.SLIDER_FLAGS_NO_INPUT)
             if change:
@@ -657,7 +580,7 @@ class ColorWidget:
         imgui.begin_group()
 
         color = bpy.context.preferences.themes[0].user_interface.wcol_numslider.item[:]
-        start_ops = imgui.Vec2(imgui.get_cursor_pos().x + 2, imgui.get_cursor_pos().y + 1)
+        start_ops = imgui.Vec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y)
 
         progress = 0.0
         progress_dir = 1.0
@@ -665,7 +588,7 @@ class ColorWidget:
 
         imgui.set_cursor_pos(start_ops)
         imgui.push_style_color(imgui.COLOR_PLOT_HISTOGRAM, *(*color[:3], 1))
-        imgui.progress_bar(strength, (imgui.calculate_item_width() - 3, 20.0), f'S:{strength:.3f}')
+        imgui.progress_bar(strength, (imgui.calculate_item_width(), 20.0), f'S:{strength:.3f}')
         imgui.pop_style_color(1)
 
         imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND, 1 / 7.0, 0.6, 1, 0)
@@ -706,43 +629,36 @@ class ColorWidget:
         row_count = 0
         column_count = 0
 
-        # region = imgui.get_content_region_avail()
         width = imgui.calculate_item_width()
-        # imgui.begin_horizontal("draw_palettes")
-        start_pos = imgui.Vec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y)
-        self.draw_preview_color()
-        imgui.set_cursor_pos(start_pos)
-        # max_line_count = int((width + 20) // (s_size + 1))  # 取商 每行能显示多少个
-        max_line_count = 10  # 取商 每行能显示多少个
+        max_line_count = int((width + 20) // (s_size + 1))  # 取商 每行能显示多少个
 
         with imgui.begin_child("draw _palettes",
                                width, 63.0,
                                True
                                ):
+            start_pos = imgui.Vec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y)
+            self.draw_preview_color()
+            imgui.set_cursor_pos(start_pos)
+            imgui.columns(max_line_count, "color_list", False)
+
+            imgui.next_column()
+            row_count += 1
+
             for index, col in enumerate(colors):
                 if max_line_count - 1 == row_count:
-                    imgui.same_line()
                     column_count += 1
                     row_count = 0
-                    offset_pos = imgui.Vec2(start_pos.x, imgui.get_cursor_pos().y + 2)
-                    imgui.set_cursor_pos(offset_pos)  # 每行间隔
 
-                is_offset = column_count in (0, 1) and row_count == 0
-                if is_offset:  # 头两行偏移
-                    sf = s_size * 2 + 4
-                    offset_y = (s_size + 1) * column_count
-                    offset_pos = imgui.Vec2(imgui.get_cursor_pos().x + sf + 1, offset_y)
-                    imgui.set_cursor_pos(offset_pos)
+                if column_count == 1 and row_count == 0:
+                    imgui.next_column()
+                    imgui.next_column()
+                    imgui.next_column()
                     row_count += 2
                 else:
-                    offset_pos = imgui.Vec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
-                    imgui.set_cursor_pos(offset_pos)
-
+                    imgui.next_column()
+                    row_count += 1
                 if imgui.color_button(f'palette##{col}', *col, 1.0, s_size, s_size):
                     self.set_color(bpy.context, col, sync_to_hsv=True)
-                row_count += 1
-
-
         imgui.pop_style_var(5)
         imgui.pop_id()
 
@@ -751,15 +667,18 @@ class ColorWidget:
 
         color = self.start_color
 
-        start_pos = imgui.Vec2(imgui.get_cursor_pos().x + 1, imgui.get_cursor_pos().y)
+        start_pos = imgui.Vec2(imgui.get_cursor_pos().x, imgui.get_cursor_pos().y)
         imgui.set_cursor_pos(start_pos)
         imgui.push_style_var(imgui.STYLE_FRAME_BORDERSIZE, 0)
         imgui.push_style_var(imgui.STYLE_ITEM_INNER_SPACING, (-2, -2))
-        imgui.push_style_var(imgui.STYLE_INDENT_SPACING, -2,)
+        imgui.push_style_var(imgui.STYLE_INDENT_SPACING, -2, )
         imgui.begin_group()
 
-        s_size = 40
+        s_size = 39
         changed = imgui.color_button('##current', *color, 1.0, imgui.COLOR_EDIT_NO_DRAG_DROP,
                                      s_size + 2, s_size + 1)
+        if changed:
+            bpy.context.window_manager.clipboard = rgb_to_hex(color)
+
         imgui.end_group()
         imgui.pop_style_var(3)
