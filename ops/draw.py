@@ -15,6 +15,8 @@ Color_Picker_Imgui_options_menu = True
 Color_Picker_Imgui_hdr = False
 import copy
 
+from ..utils import get_pref
+
 
 class Draw:
 
@@ -27,7 +29,6 @@ class Draw:
         # from ..imgui__aa.testwindow import show_test_window
         # show_test_window()
         # return
-
 
         imgui.push_style_var(imgui.STYLE_WINDOW_ROUNDING, 10)
         imgui.push_style_var(imgui.STYLE_WINDOW_BORDERSIZE, 0)
@@ -94,9 +95,9 @@ class Draw:
         import imgui
         with imgui.begin_group():
             start_pos = imgui.get_cursor_pos()
-            # self.draw_switch_button()
-            # imgui.set_cursor_pos(start_pos)
-            # self.draw_color_picker_wheel(get_pref().picker_switch)
+            self.draw_switch_button()
+            imgui.set_cursor_pos(start_pos)
+            self.draw_color_picker_wheel(get_pref().picker_switch)
             # self.draw_demo_vertial_scrolling()
 
     def draw_right(self, context):

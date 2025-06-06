@@ -196,7 +196,6 @@ def colorpicker(label, color, flags, ops):
     value_changed_h = False
     value_changed_sv = False
     # 设置当前UI元素不响应键盘导航，以免影响色相选择
-    imgui.push_item_flag(imgui.ItemFlags_.no_nav, True)
     global color_edit_active_component
     # 如果设置了色相环选择标志，则执行色相环和SV三角形的逻辑
     if flags & imgui.ColorEditFlags_.picker_hue_wheel:
@@ -297,7 +296,6 @@ def colorpicker(label, color, flags, ops):
 
     if alpha_bar:
         pass
-    imgui.pop_item_flag()
     if value_changed_h or value_changed_sv:
         if flags & imgui.ColorEditFlags_.input_rgb:
 

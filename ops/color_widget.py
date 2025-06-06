@@ -12,19 +12,31 @@ def im_clamp(v, mn, mx):
     return max(mn, min(mx, v))
 
 
+def im_saturate(f):
+    return 0.0 if f < 0.0 else 1.0 if f > 1.0 else f
+
+
+def im_lerp(a, b, t):
+    import imgui
+    return imgui.Vec2(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)
+
+
+def im_length_sqr(lhs):
+    return (lhs.x * lhs.x) + (lhs.y * lhs.y)
+
+
 def color_edit_restore_hs(color, H, S, V):
     import imgui
     gc = imgui.get_current_context()
-    assert gc.color_edit_current_id != 0, 'ColorEditCurrentID should not be zero'
-    if (
-            gc.color_edit_saved_id != gc.color_edit_current_id or gc.color_edit_saved_color != imgui.color_convert_float4_to_u32(
-        color[0], color[1], color[2], 0)):
-        pass
-    # return
-    if (S == 0.0 or (H == 0.0 and gc.color_edit_saved_hue == 1)):
-        H = gc.color_edit_saved_hue
-    if V == 0.0:
-        S = gc.color_edit_saved_sat
+    # assert gc.color_edit_current_id != 0, 'ColorEditCurrentID should not be zero'
+    # if (
+    #         gc.color_edit_saved_id != gc.color_edit_current_id or gc.color_edit_saved_color != imgui.color_convert_float4_to_u32(
+    #     color[0], color[1], color[2], 0)):
+    #     pass
+    # if S == 0.0 or (H == 0.0 and gc.color_edit_saved_hue == 1):
+    #     H = gc.color_edit_saved_hue
+    # if V == 0.0:
+    #     S = gc.color_edit_saved_sat
     return H, S, V
 
 
@@ -131,22 +143,23 @@ class ColorWidget:
         import imgui
 
         gc = imgui.get_current_context()
-        io = gc.io
-        style = gc.style
+        io = imgui.get_io()
+        style = imgui.get_style()
         draw_list = imgui.get_window_draw_list()
-        window = imgui.get_window()
+        # window = imgui.get_window()
 
         # 唯一标识符
         imgui.push_id(self.bl_idname + "draw_color_picker_wheel")
         imgui.begin_group()
 
         # 当前窗口的顶部ID将作为当前颜色编辑器的ID
-        set_current_color_edit_id = (gc.color_edit_current_id == 0)
-        if set_current_color_edit_id:
-            gc.color_edit_current_id = window.id_stack.__getitem__(window.id_stack.size() - 1)
+        # set_current_color_edit_id = (gc.color_edit_current_id == 0)
+        # if set_current_color_edit_id:
+        #     gc.color_edit_current_id = window.id_stack.__getitem__(window.id_stack.size() - 1)
 
         # 设置
-        picker_pos = imgui.Vec2(window.dc.cursor_pos.x, window.dc.cursor_pos.y)
+        # picker_pos = imgui.Vec2(window.dc.cursor_pos.x, window.dc.cursor_pos.y)
+        picker_pos = imgui.get_cursor_pos()
 
         square_sz = imgui.get_frame_height()
 
@@ -178,64 +191,62 @@ class ColorWidget:
         g = color[1]
         b = color[2]
 
-        h, s, v = imgui.color_convert_rgb_to_hsv(r, g, b, h, s, v)
+        h, s, v = imgui.color_convert_rgb_to_hsv(r, g, b)
         h, s, v = color_edit_restore_hs(color.hsv, h, s, v)
 
         value_changed = False
         value_changed_h = False
         value_changed_sv = False
 
-        imgui.push_item_flag(imgui.ItemFlags_.no_nav, True)
         global color_edit_active_component
         if picker_hue_wheel:
-            imgui.invisible_button('hsv', imgui.Vec2(sv_picker_size + style.item_inner_spacing.x + bars_width,
-                                                     sv_picker_size))
-
+            width = sv_picker_size + style.item_inner_spacing.x + bars_width
+            imgui.invisible_button('hsv', width, sv_picker_size)
             if imgui.is_item_active() and color_edit_active_component is None:
-                initial_off = imgui.Vec2(gc.io.mouse_pos_prev.x - wheel_center.x,
-                                         gc.io.mouse_pos_prev.y - wheel_center.y)
-                initial_dist2 = imgui.internal.im_length_sqr(initial_off)
-                if imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc, initial_off):
-                    color_edit_active_component = 'triangle'
-                elif initial_dist2 >= ((wheel_r_inner - 1) * (wheel_r_inner - 1)) and initial_dist2 <= (
-                        (wheel_r_outer + 1) * (wheel_r_outer + 1)):
-                    color_edit_active_component = 'wheel'
+                initial_off = imgui.Vec2(io.mouse_pos.x - wheel_center.x,
+                                         io.mouse_pos.y - wheel_center.y)
+                initial_dist2 = im_length_sqr(initial_off)
+                # if imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc, initial_off):
+                #     color_edit_active_component = 'triangle'
+                # elif initial_dist2 >= ((wheel_r_inner - 1) * (wheel_r_inner - 1)) and initial_dist2 <= (
+                #         (wheel_r_outer + 1) * (wheel_r_outer + 1)):
+                #     color_edit_active_component = 'wheel'
 
-            # 检查当前激活的控件并更新颜色值
-            if color_edit_active_component == 'triangle':
-                current_off_unrotated = imgui.Vec2(gc.io.mouse_pos.x - wheel_center.x,
-                                                   gc.io.mouse_pos.y - wheel_center.y)
-                if not imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc,
-                                                                 current_off_unrotated):
-                    current_off_unrotated = imgui.internal.im_triangle_closest_point(triangle_pa, triangle_pb,
-                                                                                     triangle_pc,
-                                                                                     current_off_unrotated)
-
-                uu, vv, ww = 0.0, 0.0, 0.0
-                uu, vv, ww = imgui.internal.im_triangle_barycentric_coords(triangle_pa, triangle_pb, triangle_pc,
-                                                                           current_off_unrotated, uu, vv, ww)
-                v = im_clamp(1.0 - vv, 0.0001, 1.0)
-                s = im_clamp(uu / v, 0.0001, 1.0)
-                value_changed = value_changed_sv = True
-
-            elif color_edit_active_component == 'wheel':
-                current_off = imgui.Vec2(gc.io.mouse_pos.x - wheel_center.x, gc.io.mouse_pos.y - wheel_center.y)
-                h = math.atan2(current_off.y, current_off.x) / math.pi * 0.5
-                if h < .0:
-                    h += 1.0
-                value_changed = value_changed_h = True
+            # # 检查当前激活的控件并更新颜色值
+            # if color_edit_active_component == 'triangle':
+            #     current_off_unrotated = imgui.Vec2(io.mouse_pos.x - wheel_center.x,
+            #                                        io.mouse_pos.y - wheel_center.y)
+            #     if not imgui.internal.im_triangle_contains_point(triangle_pa, triangle_pb, triangle_pc,
+            #                                                      current_off_unrotated):
+            #         current_off_unrotated = imgui.internal.im_triangle_closest_point(triangle_pa, triangle_pb,
+            #                                                                          triangle_pc,
+            #                                                                          current_off_unrotated)
+            #
+            #     uu, vv, ww = 0.0, 0.0, 0.0
+            #     uu, vv, ww = imgui.internal.im_triangle_barycentric_coords(triangle_pa, triangle_pb, triangle_pc,
+            #                                                                current_off_unrotated, uu, vv, ww)
+            #     v = im_clamp(1.0 - vv, 0.0001, 1.0)
+            #     s = im_clamp(uu / v, 0.0001, 1.0)
+            #     value_changed = value_changed_sv = True
+            #
+            # elif color_edit_active_component == 'wheel':
+            #     current_off = imgui.Vec2(io.mouse_pos.x - wheel_center.x, io.mouse_pos.y - wheel_center.y)
+            #     h = math.atan2(current_off.y, current_off.x) / math.pi * 0.5
+            #     if h < .0:
+            #         h += 1.0
+            #     value_changed = value_changed_h = True
 
             # 重置激活的控件状态
             if not imgui.is_item_active():
                 color_edit_active_component = None
         else:
-            imgui.invisible_button('hsv', imgui.Vec2(sv_picker_size + style.item_inner_spacing.x + bars_width,
-                                                     sv_picker_size))
+            imgui.invisible_button('hsv', sv_picker_size + style.item_inner_spacing.x + bars_width,
+                                   sv_picker_size)
             # 检查是否需要更新当前激活的控件
             if imgui.is_item_active() and color_edit_active_component is None:
-                initial_off = imgui.Vec2(gc.io.mouse_pos_prev.x - wheel_center.x,
-                                         gc.io.mouse_pos_prev.y - wheel_center.y)
-                initial_dist2 = imgui.internal.im_length_sqr(initial_off)
+                initial_off = imgui.Vec2(io.mouse_pos.x - wheel_center.x,
+                                         io.mouse_pos.y - wheel_center.y)
+                initial_dist2 = im_length_sqr(initial_off)
                 quad_l_up = imgui.Vec2(wheel_center.x + offset_l_up.x, wheel_center.y + offset_l_up.y)
                 quad_r_bot = imgui.Vec2(wheel_center.x + offset_r_bot.x, wheel_center.y + offset_r_bot.y)
 
@@ -247,14 +258,14 @@ class ColorWidget:
                     color_edit_active_component = 'wheel'
 
             if color_edit_active_component == 'square':
-                l_up = imgui.Vec2(wheel_center.x + offset_l_up.x, wheel_center.y + offset_l_up.y)
-                s = imgui.internal.im_saturate((io.mouse_pos.x - l_up.x) / (quad_size - 1))
-                v = 1.0 - imgui.internal.im_saturate((io.mouse_pos.y - l_up.y) / (quad_size - 1))
+                upper_l = imgui.Vec2(wheel_center.x + offset_l_up.x, wheel_center.y + offset_l_up.y)
+                s = im_saturate((io.mouse_pos.x - upper_l.x) / (quad_size - 1))
+                v = 1.0 - im_saturate((io.mouse_pos.y - upper_l.y) / (quad_size - 1))
                 h = color_edit_restore_h(color, h)
                 value_changed = value_changed_sv = True
 
             elif color_edit_active_component == 'wheel':
-                current_off = imgui.Vec2(gc.io.mouse_pos.x - wheel_center.x, gc.io.mouse_pos.y - wheel_center.y)
+                current_off = imgui.Vec2(io.mouse_pos.x - wheel_center.x, io.mouse_pos.y - wheel_center.y)
                 h = math.atan2(current_off.y, current_off.x) / math.pi * 0.5
                 if h < .0:
                     h += 1.0
@@ -264,41 +275,40 @@ class ColorWidget:
                 color_edit_active_component = None
             imgui.set_cursor_screen_pos(imgui.Vec2(bar0_pos_x, picker_pos.y))
 
-        imgui.pop_item_flag()
+        # imgui.pop_item_flag()
         if value_changed_h or value_changed_sv:
-            color[0], color[1], color[2] = imgui.color_convert_hsv_to_rgb(h, s, v, color[0], color[1], color[2])
+            color[0], color[1], color[2] = imgui.color_convert_hsv_to_rgb(h, s, v)
             gc.color_edit_saved_hue = h
             gc.color_edit_saved_sat = s
             gc.color_edit_saved_id = gc.color_edit_current_id
             gc.color_edit_saved_color = imgui.color_convert_float4_to_u32(
-                imgui.Vec4(color[0], color[1], color[2], 0.0))
+                color[0], color[1], color[2], 0.0)
 
         if value_changed:
             r = color[0]
             g = color[1]
             b = color[2]
-            h, s, v = imgui.color_convert_rgb_to_hsv(r, g, b, h, s, v)
+            h, s, v = imgui.color_convert_rgb_to_hsv(r, g, b)
             h, s, v = color_edit_restore_hs(color, h, s, v)
 
-        col_black = imgui.color_convert_float4_to_u32(imgui.Vec4(0.0, 0.0, 0.0, 1.0))
-        col_white = imgui.color_convert_float4_to_u32(imgui.Vec4(1.0, 1.0, 1.0, 1.0))
-        col_midgrey = imgui.color_convert_float4_to_u32(imgui.Vec4(0.5, 0.5, 0.5, 0.0))
+        col_black = imgui.color_convert_float4_to_u32(0.0, 0.0, 0.0, 1.0)
+        col_white = imgui.color_convert_float4_to_u32(1.0, 1.0, 1.0, 1.0)
+        col_midgrey = imgui.color_convert_float4_to_u32(0.5, 0.5, 0.5, 0.0)
         col_hues = [
-            imgui.get_color_u32(imgui.Vec4(255, 0, 0, 255)),  # 红色
-            imgui.get_color_u32(imgui.Vec4(255, 255, 0, 255)),  # 黄色
-            imgui.get_color_u32(imgui.Vec4(0, 255, 0, 255)),  # 绿色
-            imgui.get_color_u32(imgui.Vec4(0, 255, 255, 255)),  # 青色
-            imgui.get_color_u32(imgui.Vec4(0, 0, 255, 255)),  # 蓝色
-            imgui.get_color_u32(imgui.Vec4(255, 0, 255, 255)),  # 品红
-            imgui.get_color_u32(imgui.Vec4(255, 0, 0, 255))  # 红色(再次出现以闭合色环)
+            imgui.get_color_u32_rgba(255, 0, 0, 255),  # 红色
+            imgui.get_color_u32_rgba(255, 255, 0, 255),  # 黄色
+            imgui.get_color_u32_rgba(0, 255, 0, 255),  # 绿色
+            imgui.get_color_u32_rgba(0, 255, 255, 255),  # 青色
+            imgui.get_color_u32_rgba(0, 0, 255, 255),  # 蓝色
+            imgui.get_color_u32_rgba(255, 0, 255, 255),  # 品红
+            imgui.get_color_u32_rgba(255, 0, 0, 255)  # 红色(再次出现以闭合色环)
         ]
 
-        hue_color_f = imgui.Vec4(1, 1, 1, 1)
-        rgb = imgui.color_convert_hsv_to_rgb(h, 1, 1, hue_color_f.x, hue_color_f.y, hue_color_f.z)
+        rgb = imgui.color_convert_hsv_to_rgb(h, 1, 1)
         hue_color_f = imgui.Vec4(*rgb, 1)
 
-        hue_color32 = imgui.color_convert_float4_to_u32(hue_color_f)
-        user_col32_striped_of_alpha = imgui.color_convert_float4_to_u32(imgui.Vec4(r, g, b, 1))
+        hue_color32 = imgui.color_convert_float4_to_u32(*hue_color_f)
+        user_col32_striped_of_alpha = imgui.color_convert_float4_to_u32(r, g, b, 1)
 
         # 圆环
         aeps = 0.5 / wheel_r_outer
@@ -306,69 +316,78 @@ class ColorWidget:
         for n in range(6):
             a0 = n / 6.0 * 2.0 * math.pi - aeps
             a1 = (n + 1) / 6.0 * 2.0 * math.pi + aeps
-            vert_start_idx = imgui.get_window_draw_list().vtx_buffer.size()
-            imgui.get_window_draw_list().path_arc_to(wheel_center, (wheel_r_inner + wheel_r_outer) * 0.5, a0, a1,
+            vert_start_idx = imgui.vertex_buffer_vertex_size()
+            imgui.get_window_draw_list().path_arc_to(wheel_center.x, wheel_center.y,
+                                                     (wheel_r_inner + wheel_r_outer) * 0.5, a0, a1,
                                                      segment_per_arc)  # 绘制弧形路径
             imgui.get_window_draw_list().path_stroke(col_white, 0, wheel_thickness)
-            vert_end_idx = imgui.get_window_draw_list().vtx_buffer.size()
+            vert_end_idx = imgui.vertex_buffer_vertex_size()
             gradient_p0 = imgui.Vec2(wheel_center.x + math.cos(a0) * wheel_r_inner,
                                      wheel_center.y + math.sin(a0) * wheel_r_inner)  # 起始点的坐标
             gradient_p1 = imgui.Vec2(wheel_center.x + math.cos(a1) * wheel_r_inner,
                                      wheel_center.y + math.sin(a1) * wheel_r_inner)  # 结束点的坐标
-            imgui.internal.shade_verts_linear_color_gradient_keep_alpha(imgui.get_window_draw_list(), vert_start_idx,
-                                                                        vert_end_idx, gradient_p0, gradient_p1,
-                                                                        col_hues[n], col_hues[n + 1])
+            # imgui.internal.shade_verts_linear_color_gradient_keep_alpha(imgui.get_window_draw_list(), vert_start_idx,
+            #                                                             vert_end_idx, gradient_p0, gradient_p1,
+            #                                                             col_hues[n], col_hues[n + 1])
+
         cos_hue_angle = math.cos(h * 2.0 * math.pi)
         sin_hue_angle = math.sin(h * 2.0 * math.pi)
         hue_cursor_pos = imgui.Vec2(wheel_center.x + cos_hue_angle * (wheel_r_inner + wheel_r_outer) * 0.5,
                                     wheel_center.y + sin_hue_angle * (wheel_r_inner + wheel_r_outer) * 0.5)
 
         hue_cursor_rad = wheel_thickness * 0.65 if value_changed_h else wheel_thickness * 0.55
-        hue_cursor_segments = imgui.get_window_draw_list()._calc_circle_auto_segment_count(hue_cursor_rad)
-        imgui.get_window_draw_list().add_circle_filled(hue_cursor_pos, hue_cursor_rad, hue_color32, hue_cursor_segments)
-        imgui.get_window_draw_list().add_circle(hue_cursor_pos, hue_cursor_rad + 1, col_midgrey, hue_cursor_segments)
-        imgui.get_window_draw_list().add_circle(hue_cursor_pos, hue_cursor_rad, col_white, hue_cursor_segments)
+        hue_cursor_segments = 64
+        imgui.get_window_draw_list().add_circle_filled(hue_cursor_pos.x, hue_cursor_pos.y, hue_cursor_rad, hue_color32,
+                                                       hue_cursor_segments)
+        imgui.get_window_draw_list().add_circle(hue_cursor_pos.x, hue_cursor_pos.y, hue_cursor_rad + 1, col_midgrey,
+                                                hue_cursor_segments)
+        imgui.get_window_draw_list().add_circle(hue_cursor_pos.x, hue_cursor_pos.y, hue_cursor_rad, col_white,
+                                                hue_cursor_segments)
 
         # 圆环上的 按钮
         if picker_hue_wheel:
             tra = imgui.Vec2((wheel_center.x + triangle_pa.x), (wheel_center.y + triangle_pa.y))
             trb = imgui.Vec2((wheel_center.x + triangle_pb.x), (wheel_center.y + triangle_pb.y))
             trc = imgui.Vec2((wheel_center.x + triangle_pc.x), (wheel_center.y + triangle_pc.y))
-            uv_white = imgui.get_font_tex_uv_white_pixel()
+            u, v = imgui.get_font_tex_uv_white_pixel()
 
             imgui.get_window_draw_list().prim_reserve(3, 3)
-            imgui.get_window_draw_list().prim_vtx(tra, uv_white, hue_color32)
-            imgui.get_window_draw_list().prim_vtx(trb, uv_white, col_black)
-            imgui.get_window_draw_list().prim_vtx(trc, uv_white, col_white)
-            imgui.get_window_draw_list().add_triangle(tra, trb, trc, col_midgrey, 0)
-            sv_cursor_pos = imgui.internal.im_lerp(imgui.internal.im_lerp(trc, tra, imgui.internal.im_saturate(s)), trb,
-                                                   imgui.internal.im_saturate(1 - v))
+            imgui.get_window_draw_list().prim_vtx(tra.x, tra.y, u, v, hue_color32)
+            imgui.get_window_draw_list().prim_vtx(trb.x, trb.y, u, v, col_black)
+            imgui.get_window_draw_list().prim_vtx(trc.x, trc.y, u, v, col_white)
+            imgui.get_window_draw_list().add_triangle(tra.x, tra.y, trb.x, trb.y, trc.x, trc.y, col_midgrey, 0)
+            sv_cursor_pos = im_lerp(im_lerp(trc, tra, im_saturate(s)), trb, im_saturate(1 - v))
         else:  # 绘制正方形
-            l_up = imgui.Vec2(wheel_center.x + offset_l_up.x, wheel_center.y + offset_l_up.y)
-            r_bot = imgui.Vec2(wheel_center.x + offset_r_bot.x, wheel_center.y + offset_r_bot.y)
+            upper_l = imgui.Vec2(wheel_center.x + offset_l_up.x, wheel_center.y + offset_l_up.y)
+            lower_r = imgui.Vec2(wheel_center.x + offset_r_bot.x, wheel_center.y + offset_r_bot.y)
 
-            draw_list.add_rect_filled_multicolor(l_up, r_bot, col_white, hue_color32, hue_color32, col_white)
-            draw_list.add_rect_filled_multicolor(l_up, r_bot, 0, 0, col_black, col_black)
-            imgui.internal.render_frame_border(l_up, r_bot, 0.0)
+            draw_list.add_rect_filled_multicolor(upper_l.x, upper_l.y, lower_r.x, lower_r.y,
+                                                 col_white, hue_color32, hue_color32, col_white)
+            draw_list.add_rect_filled_multicolor(upper_l.x, upper_l.y, lower_r.x, lower_r.y, 0, 0, col_black, col_black)
+            # imgui.internal.render_frame_border(upper_l, lower_r, 0.0)
 
-            sv_cursor_pos = imgui.Vec2(0, 0)
-            sv_cursor_pos.x = im_clamp(round(l_up.x + imgui.internal.im_saturate(s) * quad_size), l_up.x + 2,
-                                       picker_pos.x + sv_picker_size - 2)
-            sv_cursor_pos.y = im_clamp(round(l_up.y + imgui.internal.im_saturate(1 - v) * quad_size), l_up.y + 2,
-                                       l_up.y + quad_size - 2)
+            sv_cursor_pos = (0, 0)
+            sv_cursor_pos = imgui.Vec2(im_clamp(round(upper_l.x + im_saturate(s) * quad_size), upper_l.x + 2,
+                                                picker_pos.x + sv_picker_size - 2),
+                                       im_clamp(round(upper_l.y + im_saturate(1 - v) * quad_size), upper_l.y + 2,
+                                                upper_l.y + quad_size - 2)
+                                       )
         sv_cursor_rad = wheel_thickness * 0.55 if value_changed_sv else wheel_thickness * 0.4
-        sv_cursor_segments = imgui.get_window_draw_list()._calc_circle_auto_segment_count(sv_cursor_rad)
+        sv_cursor_segments = 64
 
-        imgui.get_window_draw_list().add_circle_filled(sv_cursor_pos, sv_cursor_rad, user_col32_striped_of_alpha,
+        imgui.get_window_draw_list().add_circle_filled(sv_cursor_pos.x, sv_cursor_pos.y, sv_cursor_rad,
+                                                       user_col32_striped_of_alpha,
                                                        sv_cursor_segments)
-        imgui.get_window_draw_list().add_circle(sv_cursor_pos, sv_cursor_rad + 1, col_midgrey, sv_cursor_segments)
-        imgui.get_window_draw_list().add_circle(sv_cursor_pos, sv_cursor_rad, col_white, sv_cursor_segments)
+        imgui.get_window_draw_list().add_circle(sv_cursor_pos.x, sv_cursor_pos.y, sv_cursor_rad + 1, col_midgrey,
+                                                sv_cursor_segments)
+        imgui.get_window_draw_list().add_circle(sv_cursor_pos.x, sv_cursor_pos.y, sv_cursor_rad, col_white,
+                                                sv_cursor_segments)
         imgui.end_group()
 
         if value_changed and gc.last_item_data.id_ != 0:
             imgui.internal.mark_item_edited(gc.last_item_data.id_)
-        if set_current_color_edit_id:
-            gc.color_edit_current_id = 0
+        # if set_current_color_edit_id:
+        #     gc.color_edit_current_id = 0
         imgui.pop_id()
 
         if value_changed:
@@ -516,38 +535,56 @@ class ColorWidget:
         import imgui
         from ..utils import get_pref
 
-        window = imgui.internal.get_current_window()
-        draw_list = window.draw_list
+        # window = imgui.internal.get_current_window()
+        # draw_list = window.draw_list
+
         start_pos = pos = imgui.get_cursor_pos()
-        imgui.set_cursor_pos(start_pos)
         size = 20
         center = imgui.Vec2(pos.x + size / 2, pos.y + size / 2)
-        imgui.push_style_color(21, 0, 0, 0, 0.1)
-        imgui.push_style_color(22, 0, 0, 0, 0.1)
-        imgui.push_style_color(23, 0, 0, 0, 0.1)
 
+        imgui.set_cursor_pos(start_pos)
         pref = get_pref()
         # 绘制按钮
-        if imgui.button(" ", imgui.Vec2(size, size)):
+        if imgui.button("绘制按钮", size, size):
             pref.picker_switch = not pref.picker_switch
 
+        imgui.push_style_color(imgui.STYLE_TAB_ROUNDING, 0, 0, 0, 0.1)
+        imgui.push_style_color(imgui.STYLE_BUTTON_TEXT_ALIGN, 0, 0, 0, 0.1)
+        imgui.push_style_color(imgui.STYLE_SELECTABLE_TEXT_ALIGN, 0, 0, 0, 0.1)
         imgui.pop_style_color(3)
 
         size /= 2
         position = center
+        draw_list = imgui.get_window_draw_list()
         if pref.picker_switch:
             draw_list.add_triangle_filled(
-                imgui.Vec2(position[0] + size, position[1] + size),
-                imgui.Vec2(position[0] - size, position[1] + size),
-                imgui.Vec2(position[0], position[1] - size),
+                position[0] + size, position[1] + size,
+                position[0] - size, position[1] + size,
+                position[0], position[1] - size,
                 imgui.color_convert_float4_to_u32(0.6, .6, .6, 0.05)
             )
         else:
             draw_list.add_rect_filled(
-                imgui.Vec2(position[0] - size, position[1] - size),
-                imgui.Vec2(position[0] + size, position[1] + size),
+                position[0] - size, position[1] - size,
+                position[0] + size, position[1] + size,
                 imgui.color_convert_float4_to_u32(0.6, .6, .6, 0.05)
             )
+
+        pos_x = 10
+        pos_y = 10
+        sz = 20
+
+        draw_list = imgui.get_window_draw_list()
+
+        for i in range(0, imgui.COLOR_COUNT):
+            name = imgui.get_style_color_name(i)
+            draw_list.add_rect_filled(pos_x, pos_y, pos_x + sz, pos_y + sz, imgui.get_color_u32_idx(i))
+            imgui.dummy(sz, sz)
+            imgui.same_line()
+
+        rgba_color = imgui.get_color_u32_rgba(1, 1, 0, 1)
+        draw_list.add_rect_filled(pos_x, pos_y, pos_x + sz, pos_y + sz, rgba_color)
+        imgui.set_cursor_pos(start_pos)
 
     def draw_brush_size(self):
         import imgui
