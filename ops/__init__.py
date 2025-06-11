@@ -2,7 +2,7 @@ import bpy
 from mathutils import Vector
 
 from .color_sync import ColorSync
-from .color_widget import ColorWidget
+from .color_widget import ColorWidget, PickerWidget
 from .demo import Demo
 from .draw import Draw
 from .event_handle import ImguiEvent
@@ -10,7 +10,7 @@ from .key import SyncKey
 from ..utils import get_brush
 
 
-class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidget, Draw, Demo):
+class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidget, PickerWidget, Draw, Demo):
     bl_idname = "paint.color_picker"
     bl_label = "Color picker"
     bl_options = {'REGISTER', 'UNDO'}
@@ -78,7 +78,6 @@ class ColorPicker(bpy.types.Operator, ImguiEvent, SyncKey, ColorSync, ColorWidge
     def refresh(context):
         for area in context.screen.areas:
             area.tag_redraw()
-
 
 
 def register():

@@ -50,3 +50,19 @@ def rgb_to_hex(rgb):
     """将 RGB 元组 (0-1范围) 转换为十六进制字符串"""
     return f"#{int(rgb[0] * 255):02X}{int(rgb[1] * 255):02X}{int(rgb[2] * 255):02X}"
 
+
+def im_clamp(v, mn, mx):
+    return max(mn, min(mx, v))
+
+
+def im_saturate(f):
+    return 0.0 if f < 0.0 else 1.0 if f > 1.0 else f
+
+
+def im_lerp(a, b, t):
+    import imgui
+    return imgui.Vec2(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)
+
+
+def im_length_sqr(lhs):
+    return (lhs.x * lhs.x) + (lhs.y * lhs.y)

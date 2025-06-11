@@ -89,7 +89,7 @@ class Draw:
         imgui.same_line()
 
         self.draw_left(context)
-        self.draw_right(context)
+        # self.draw_right(context)
 
     def draw_left(self, context):
         import imgui
@@ -97,7 +97,8 @@ class Draw:
             start_pos = imgui.get_cursor_pos()
             self.draw_switch_button()
             imgui.set_cursor_pos(start_pos)
-            self.draw_color_picker_wheel(get_pref().picker_switch)
+            # self.draw_color_picker_wheel(get_pref().picker_switch)
+            self.draw_picker_square_widget()
             # self.draw_demo_vertial_scrolling()
 
     def draw_right(self, context):
